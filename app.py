@@ -123,10 +123,19 @@ if not df_exibicao.empty:
             st.write(f"**Telefone:** {empresa['telefone1']}")
             st.write(f"**E-mail:** {empresa['correio_eletronico']}")
 
-            end_busca = f"{empresa['logradouro']}, {empresa['numero']}, {empresa['bairro']}, {empresa['municipio']} - {empresa['uf']}, {empresa['cep']}"
-            url_maps = f"https://www.google.com/maps/search/?api=1&query={requests.utils.quote(end_busca)}"
+            # Formatação precisa para localizar o pino exato no Google Maps
+            logr = str(empresa['logradouro']).strip() if pd.notna(empresa['logradouro']) else ""
+            num = str(empresa['numero']).strip() if pd.notna(empresa['numero']) else ""
+            bairro = str(empresa['bairro']).strip() if pd.notna(empresa['bairro']) else ""
+            muni = str(empresa['municipio']).strip() if pd.notna(empresa['municipio']) else ""
+            uf = str(empresa['uf']).strip() if pd.notna(empresa['uf']) else ""
+            cep = str(empresa['cep']).strip() if pd.notna(empresa['cep']) else ""
+
+            # Constrói o texto completo do endereço sem falhas de formatação
+            endereco_completo = f"{logr}, {num}, {bairro}, {muni} - {uf}, {cep}, Brasil"
+            url_maps = f"https://www.google.com/maps/search/?api=1&query={requests.utils.quote(endereco_completo)}"
             
-            st.link_button("🗺️ Ver Região no Google Maps", url_maps)
+            st.link_button("🗺️ Ver Local Exato no Google Maps", url_maps)
 
             st.divider()
 
