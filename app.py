@@ -52,7 +52,7 @@ def obter_colunas_tabela():
     conn.close()
     return colunas
 
-def carregar_dados(filtro_bairro, filtro_porte, filtro_status, busca):
+def carregar_dados(filtro_bairro, filtro_porte, filtro_status, busca, limite=1000):
     conn = get_db_connection()
     query = "SELECT * FROM empresas WHERE 1=1"
     params = []
@@ -72,6 +72,10 @@ def carregar_dados(filtro_bairro, filtro_porte, filtro_status, busca):
     if busca:
         query += " AND (cnpj_formatado ILIKE %s OR razao_social ILIKE %s OR nome_fantasia ILIKE %s OR cnae_principal ILIKE %s)"
         params.extend([f"%{busca}%", f"%{busca}%", f"%{busca}%", f"%{busca}%"])
+
+    # Limite para garantir performance em bases com milhões de registros
+    query += " LIMIT %s"
+    params.append(limite)
 
     df = pd.read_sql_query(query, conn, params=params)
     conn.close()
@@ -114,7 +118,10 @@ busca_texto = st.sidebar.text_input("Buscar por CNPJ, Razão, Fantasia ou CNAE:"
 
 df_exibicao = carregar_dados(sel_bairro, sel_porte, sel_status, busca_texto)
 
-st.write(f"📊 **{len(df_exibicao)}** empresas encontradas.")
+if len(df_exibicao) >= 1000:
+    st.info("ℹ️ Exibindo as primeiras **1.000 empresas**. Utilize os filtros de Bairro, Porte ou Busca para refinar os resultados.")
+
+st.write(f"📊 **{len(df_exibicao)}** empresas encontradas no resultado atual.")
 
 if not df_exibicao.empty:
     col_tabela, col_detalhes = st.columns([1.8, 1.2])
