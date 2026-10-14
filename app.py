@@ -44,7 +44,15 @@ if st.sidebar.button("🚪 Sair do Sistema"):
 def get_db_connection():
     return psycopg2.connect(st.secrets["POSTGRES_URL"])
 
-def carregar_dados(filtro_bairro, filtro_porte, filtro_status, filtro_ano, filtro_mes, busca):
+def obter_colunas_tabela():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'empresas'")
+    colunas = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return colunas
+
+def carregar_dados(filtro_bairro, filtro_porte, filtro_status, filtro_ano, filtro_mes, busca, tem_data_inicio):
     conn = get_db_connection()
     query = "SELECT * FROM empresas WHERE 1=1"
     params = []
@@ -61,19 +69,19 @@ def carregar_dados(filtro_bairro, filtro_porte, filtro_status, filtro_ano, filtr
         query += " AND status_followup = %s"
         params.append(filtro_status)
 
-    if filtro_ano != "Todos":
-        query += " AND data_inicio_atividade LIKE %s"
-        params.append(f"{filtro_ano}%")
-
-    if filtro_mes != "Todos":
-        # Extrai o número do mês (ex: "05 - Maio" -> "05")
-        num_mes = filtro_mes.split(" - ")[0]
+    if tem_data_inicio:
         if filtro_ano != "Todos":
             query += " AND data_inicio_atividade LIKE %s"
-            params.append(f"{filtro_ano}{num_mes}%")
-        else:
-            query += " AND SUBSTRING(data_inicio_atividade FROM 5 FOR 2) = %s"
-            params.append(num_mes)
+            params.append(f"{filtro_ano}%")
+
+        if filtro_mes != "Todos":
+            num_mes = filtro_mes.split(" - ")[0]
+            if filtro_ano != "Todos":
+                query += " AND data_inicio_atividade LIKE %s"
+                params.append(f"{filtro_ano}{num_mes}%")
+            else:
+                query += " AND SUBSTRING(data_inicio_atividade FROM 5 FOR 2) = %s"
+                params.append(num_mes)
 
     if busca:
         query += " AND (cnpj_formatado ILIKE %s OR razao_social ILIKE %s OR nome_fantasia ILIKE %s OR cnae_principal ILIKE %s)"
@@ -101,27 +109,35 @@ st.title("🏢 Painel de Gestão e Follow-up de Vendas")
 
 st.sidebar.header("🔍 Filtros de Busca")
 
+colunas_existentes = obter_colunas_tabela()
+tem_data_inicio = "data_inicio_atividade" in colunas_existentes
+
 conn = get_db_connection()
 bairros_disponiveis = ["Todos"] + list(pd.read_sql_query("SELECT DISTINCT bairro FROM empresas WHERE bairro IS NOT NULL AND bairro != '' ORDER BY bairro", conn)['bairro'])
-portes_disponiveis = ["Todos"] + list(pd.read_sql_query("SELECT DISTINCT porte_empresa FROM empresas WHERE porte_empresa IS NOT NULL AND porte_empresa != '' ORDER BY porte_empresa", conn)['porte_empresa'])
 
-# Extração dos anos presentes no banco
-df_anos = pd.read_sql_query("SELECT DISTINCT SUBSTRING(data_inicio_atividade FROM 1 FOR 4) as ano FROM empresas WHERE data_inicio_atividade IS NOT NULL ORDER BY ano DESC", conn)
-anos_disponiveis = ["Todos"] + [a for a in df_anos['ano'] if a and len(a) == 4]
+if "porte_empresa" in colunas_existentes:
+    portes_disponiveis = ["Todos"] + list(pd.read_sql_query("SELECT DISTINCT porte_empresa FROM empresas WHERE porte_empresa IS NOT NULL AND porte_empresa != '' ORDER BY porte_empresa", conn)['porte_empresa'])
+else:
+    portes_disponiveis = ["Todos"]
+
+if tem_data_inicio:
+    df_anos = pd.read_sql_query("SELECT DISTINCT SUBSTRING(data_inicio_atividade FROM 1 FOR 4) as ano FROM empresas WHERE data_inicio_atividade IS NOT NULL AND data_inicio_atividade != '' ORDER BY ano DESC", conn)
+    anos_disponiveis = ["Todos"] + [a for a in df_anos['ano'] if a and len(a) == 4]
+else:
+    anos_disponiveis = ["Todos"]
 conn.close()
 
 sel_bairro = st.sidebar.selectbox("Bairro:", bairros_disponiveis)
 sel_porte = st.sidebar.selectbox("Porte da Empresa:", portes_disponiveis)
 sel_status = st.sidebar.selectbox("Status Follow-up:", ["Todos", "Pendente", "Em Contato", "Agendado", "Concluído", "Sem Interesse"])
 
-# NOVOS FILTROS DE MÊS E ANO DE ABERTURA
 sel_ano = st.sidebar.selectbox("Ano de Abertura:", anos_disponiveis)
 opcoes_meses = ["Todos", "01 - Janeiro", "02 - Fevereiro", "03 - Março", "04 - Abril", "05 - Maio", "06 - Junho", "07 - Julho", "08 - Agosto", "09 - Setembro", "10 - Outubro", "11 - Novembro", "12 - Dezembro"]
 sel_mes = st.sidebar.selectbox("Mês de Abertura:", opcoes_meses)
 
 busca_texto = st.sidebar.text_input("Buscar por CNPJ, Razão, Fantasia ou CNAE:")
 
-df_exibicao = carregar_dados(sel_bairro, sel_porte, sel_status, sel_ano, sel_mes, busca_texto)
+df_exibicao = carregar_dados(sel_bairro, sel_porte, sel_status, sel_ano, sel_mes, busca_texto, tem_data_inicio)
 
 st.write(f"📊 **{len(df_exibicao)}** empresas encontradas.")
 
