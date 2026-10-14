@@ -44,7 +44,7 @@ if st.sidebar.button("🚪 Sair do Sistema"):
 def get_db_connection():
     return psycopg2.connect(st.secrets["POSTGRES_URL"])
 
-def carregar_dados(filtro_bairro, filtro_porte, filtro_status, busca):
+def carregar_dados(filtro_bairro, filtro_porte, filtro_status, filtro_ano, filtro_mes, busca):
     conn = get_db_connection()
     query = "SELECT * FROM empresas WHERE 1=1"
     params = []
@@ -60,6 +60,20 @@ def carregar_dados(filtro_bairro, filtro_porte, filtro_status, busca):
     if filtro_status != "Todos":
         query += " AND status_followup = %s"
         params.append(filtro_status)
+
+    if filtro_ano != "Todos":
+        query += " AND data_inicio_atividade LIKE %s"
+        params.append(f"{filtro_ano}%")
+
+    if filtro_mes != "Todos":
+        # Extrai o número do mês (ex: "05 - Maio" -> "05")
+        num_mes = filtro_mes.split(" - ")[0]
+        if filtro_ano != "Todos":
+            query += " AND data_inicio_atividade LIKE %s"
+            params.append(f"{filtro_ano}{num_mes}%")
+        else:
+            query += " AND SUBSTRING(data_inicio_atividade FROM 5 FOR 2) = %s"
+            params.append(num_mes)
 
     if busca:
         query += " AND (cnpj_formatado ILIKE %s OR razao_social ILIKE %s OR nome_fantasia ILIKE %s OR cnae_principal ILIKE %s)"
@@ -90,14 +104,24 @@ st.sidebar.header("🔍 Filtros de Busca")
 conn = get_db_connection()
 bairros_disponiveis = ["Todos"] + list(pd.read_sql_query("SELECT DISTINCT bairro FROM empresas WHERE bairro IS NOT NULL AND bairro != '' ORDER BY bairro", conn)['bairro'])
 portes_disponiveis = ["Todos"] + list(pd.read_sql_query("SELECT DISTINCT porte_empresa FROM empresas WHERE porte_empresa IS NOT NULL AND porte_empresa != '' ORDER BY porte_empresa", conn)['porte_empresa'])
+
+# Extração dos anos presentes no banco
+df_anos = pd.read_sql_query("SELECT DISTINCT SUBSTRING(data_inicio_atividade FROM 1 FOR 4) as ano FROM empresas WHERE data_inicio_atividade IS NOT NULL ORDER BY ano DESC", conn)
+anos_disponiveis = ["Todos"] + [a for a in df_anos['ano'] if a and len(a) == 4]
 conn.close()
 
 sel_bairro = st.sidebar.selectbox("Bairro:", bairros_disponiveis)
 sel_porte = st.sidebar.selectbox("Porte da Empresa:", portes_disponiveis)
 sel_status = st.sidebar.selectbox("Status Follow-up:", ["Todos", "Pendente", "Em Contato", "Agendado", "Concluído", "Sem Interesse"])
+
+# NOVOS FILTROS DE MÊS E ANO DE ABERTURA
+sel_ano = st.sidebar.selectbox("Ano de Abertura:", anos_disponiveis)
+opcoes_meses = ["Todos", "01 - Janeiro", "02 - Fevereiro", "03 - Março", "04 - Abril", "05 - Maio", "06 - Junho", "07 - Julho", "08 - Agosto", "09 - Setembro", "10 - Outubro", "11 - Novembro", "12 - Dezembro"]
+sel_mes = st.sidebar.selectbox("Mês de Abertura:", opcoes_meses)
+
 busca_texto = st.sidebar.text_input("Buscar por CNPJ, Razão, Fantasia ou CNAE:")
 
-df_exibicao = carregar_dados(sel_bairro, sel_porte, sel_status, busca_texto)
+df_exibicao = carregar_dados(sel_bairro, sel_porte, sel_status, sel_ano, sel_mes, busca_texto)
 
 st.write(f"📊 **{len(df_exibicao)}** empresas encontradas.")
 
@@ -107,7 +131,7 @@ if not df_exibicao.empty:
     with col_tabela:
         st.subheader("📋 Lista de Empresas")
         
-        cols_resumo = ['cnpj_formatado', 'razao_social', 'porte_empresa', 'bairro', 'status_followup', 'telefone1']
+        cols_resumo = ['cnpj_formatado', 'razao_social', 'porte_empresa', 'bairro', 'data_inicio_atividade', 'status_followup', 'telefone1']
         cols_presentes = [c for c in cols_resumo if c in df_exibicao.columns]
         
         selecao = st.dataframe(
@@ -129,7 +153,6 @@ if not df_exibicao.empty:
             if pd.notna(empresa.get('nome_fantasia')) and str(empresa.get('nome_fantasia')).strip():
                 st.caption(f"**Nome Fantasia:** {empresa.get('nome_fantasia')}")
 
-            # Organização em abas temáticas para os 31 campos
             tab_cad, tab_end, tab_cont, tab_datas = st.tabs(["🏛️ Cadastro", "📍 Endereço", "📞 Contato", "📅 Situação"])
 
             with tab_cad:
@@ -179,16 +202,13 @@ if not df_exibicao.empty:
                 st.write(f"**E-mail:** {email if email else 'Não Informado'}")
 
             with tab_datas:
+                st.write(f"**Data Início Atividade:** {empresa.get('data_inicio_atividade', '')}")
                 st.write(f"**Situação Cadastral:** {empresa.get('situacao_cadastral', '')}")
                 st.write(f"**Data da Situação:** {empresa.get('data_situacao', '')}")
                 st.write(f"**Motivo da Situação:** {empresa.get('motivo_situacao', 'SEM MOTIVO')}")
-                st.write(f"**Data Início Atividade:** {empresa.get('data_inicio_atividade', '')}")
                 if pd.notna(empresa.get('situacao_especial')) and str(empresa.get('situacao_especial')).strip():
                     st.write(f"**Situação Especial:** {empresa.get('situacao_especial')}")
                     st.write(f"**Data Situação Especial:** {empresa.get('data_situacao_especial')}")
-                if pd.notna(empresa.get('cidade_exterior')) and str(empresa.get('cidade_exterior')).strip():
-                    st.write(f"**Cidade Exterior:** {empresa.get('cidade_exterior')}")
-                    st.write(f"**País:** {empresa.get('pais')}")
 
             st.divider()
 
