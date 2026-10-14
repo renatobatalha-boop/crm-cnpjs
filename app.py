@@ -70,18 +70,22 @@ def carregar_dados(filtro_bairro, filtro_porte, filtro_status, filtro_ano, filtr
         params.append(filtro_status)
 
     if tem_data_inicio:
-        if filtro_ano != "Todos":
+        num_mes = filtro_mes.split(" - ")[0] if filtro_mes != "Todos" else ""
+
+        # Caso 1: Filtrou Ano E Mês (ex: 2024 e 05) -> Busca '202405%'
+        if filtro_ano != "Todos" and filtro_mes != "Todos":
+            query += " AND data_inicio_atividade LIKE %s"
+            params.append(f"{filtro_ano}{num_mes}%")
+
+        # Caso 2: Filtrou APENAS o Ano (ex: 2024 e Todos) -> Busca '2024%'
+        elif filtro_ano != "Todos" and filtro_mes == "Todos":
             query += " AND data_inicio_atividade LIKE %s"
             params.append(f"{filtro_ano}%")
 
-        if filtro_mes != "Todos":
-            num_mes = filtro_mes.split(" - ")[0]
-            if filtro_ano != "Todos":
-                query += " AND data_inicio_atividade LIKE %s"
-                params.append(f"{filtro_ano}{num_mes}%")
-            else:
-                query += " AND SUBSTRING(data_inicio_atividade FROM 5 FOR 2) = %s"
-                params.append(num_mes)
+        # Caso 3: Filtrou APENAS o Mês (ex: Todos e 05) -> Busca do 5º ao 6º caractere
+        elif filtro_ano == "Todos" and filtro_mes != "Todos":
+            query += " AND SUBSTRING(data_inicio_atividade FROM 5 FOR 2) = %s"
+            params.append(num_mes)
 
     if busca:
         query += " AND (cnpj_formatado ILIKE %s OR razao_social ILIKE %s OR nome_fantasia ILIKE %s OR cnae_principal ILIKE %s)"
