@@ -1,232 +1,325 @@
 import streamlit as st
 import pandas as pd
-import requests
-import psycopg2
-
-st.set_page_config(page_title="CRM de CNPJs - Acesso Equipe", layout="wide")
+from sqlalchemy import create_engine, text
 
 # ==========================================
-# 1. AUTENTICAÇÃO SIMPLES (LOGIN & SENHA)
+# CONFIGURAÇÃO DA PÁGINA STREAMLIT
 # ==========================================
-USUARIO_CORRETO = st.secrets.get("USER_LOGIN", "admin")
-SENHA_CORRETA = st.secrets.get("USER_PASSWORD", "senha123")
+st.set_page_config(
+    page_title="Gestão e Prospecção de CNPJs",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-def verificar_login():
-    if "autenticado" not in st.session_state:
-        st.session_state["autenticado"] = False
+# URI de Conexão com o NeonDB
+POSTGRES_URI = "postgresql+psycopg2://neondb_owner:npg_bNDxjo9L2giC@ep-empty-hall-b4zx7bew-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
-    if not st.session_state["autenticado"]:
-        st.markdown("<h2 style='text-align: center;'>🔒 Acesso ao CRM de CNPJs</h2>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            usuario = st.text_input("Usuário")
-            senha = st.text_input("Senha", type="password")
-            if st.button("Entrar", use_container_width=True):
-                if usuario == USUARIO_CORRETO and senha == SENHA_CORRETA:
-                    st.session_state["autenticado"] = True
-                    st.rerun()
-                else:
-                    st.error("Usuário ou senha incorretos.")
-        return False
-    return True
+@st.cache_resource
+def get_db_engine():
+    return create_engine(POSTGRES_URI, pool_pre_ping=True)
 
-if not verificar_login():
-    st.stop()
+engine = get_db_engine()
 
-# Botão de Logout na Sidebar
-if st.sidebar.button("🚪 Sair do Sistema"):
-    st.session_state["autenticado"] = False
-    st.rerun()
+# Garante que as colunas de CRM existam no NeonDB
+def inicializar_estrutura_crm():
+    with engine.begin() as conn:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS empresas (
+                cnpj_formatado VARCHAR PRIMARY KEY,
+                razao_social VARCHAR, nome_fantasia VARCHAR, porte_empresa VARCHAR, situacao_cadastral VARCHAR,
+                matriz_filial VARCHAR, uf VARCHAR, municipio VARCHAR, cnae_principal VARCHAR, data_inicio_atividade VARCHAR,
+                correio_eletronico VARCHAR, telefone1 VARCHAR, motivo_situacao VARCHAR, data_situacao VARCHAR,
+                cidade_exterior VARCHAR, pais VARCHAR, cnae_secundario VARCHAR, tipo_logradouro VARCHAR, logradouro VARCHAR,
+                numero VARCHAR, complemento VARCHAR, bairro VARCHAR, cep VARCHAR, ddd1 VARCHAR, ddd2 VARCHAR, telefone2 VARCHAR,
+                ddd_fax VARCHAR, fax VARCHAR, situacao_especial VARCHAR, data_situacao_especial VARCHAR, capital_social VARCHAR,
+                status_followup VARCHAR DEFAULT 'Pendente',
+                observacoes TEXT DEFAULT '',
+                responsavel_tratamento VARCHAR DEFAULT ''
+            );
+        """))
+        conn.execute(text("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS responsavel_tratamento VARCHAR DEFAULT '';"))
 
-# ==========================================
-# 2. CONEXÃO COM O BANCO DE DADOS EM NUVEM
-# ==========================================
-def get_db_connection():
-    return psycopg2.connect(st.secrets["POSTGRES_URL"])
+inicializar_estrutura_crm()
 
-def obter_colunas_tabela():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'empresas'")
-    colunas = [row[0] for row in cursor.fetchall()]
-    conn.close()
-    return colunas
-
-def carregar_dados(filtro_bairro, filtro_porte, filtro_status, busca, limite_opcao):
-    conn = get_db_connection()
-    query = "SELECT * FROM empresas WHERE 1=1"
-    params = []
-
-    if filtro_bairro != "Todos":
-        query += " AND bairro = %s"
-        params.append(filtro_bairro)
-
-    if filtro_porte != "Todos":
-        query += " AND porte_empresa = %s"
-        params.append(filtro_porte)
-        
-    if filtro_status != "Todos":
-        query += " AND status_followup = %s"
-        params.append(filtro_status)
-
-    if busca:
-        query += " AND (cnpj_formatado ILIKE %s OR razao_social ILIKE %s OR nome_fantasia ILIKE %s OR cnae_principal ILIKE %s)"
-        params.extend([f"%{busca}%", f"%{busca}%", f"%{busca}%", f"%{busca}%"])
-
-    if limite_opcao != "Sem Limite":
-        query += " LIMIT %s"
-        params.append(int(limite_opcao))
-
-    df = pd.read_sql_query(query, conn, params=params)
-    conn.close()
+# Carrega os dados brutos filtrados do banco na nuvem
+@st.cache_data(ttl=60)
+def carregar_dados_empresas():
+    query = """
+        SELECT 
+            cnpj_formatado, razao_social, nome_fantasia, porte_empresa, situacao_cadastral,
+            matriz_filial, uf, municipio, cnae_principal, data_inicio_atividade,
+            correio_eletronico, telefone1, bairro, cep, logradouro, numero, complemento,
+            capital_social, status_followup, observacoes, COALESCE(responsavel_tratamento, '') AS responsavel_tratamento
+        FROM empresas
+    """
+    df = pd.read_sql(query, engine)
     return df
 
-def atualizar_followup(cnpj, novo_status, obs):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE empresas 
-        SET status_followup = %s, observacoes = %s 
-        WHERE cnpj_formatado = %s
-    """, (novo_status, obs, cnpj))
-    conn.commit()
-    conn.close()
+df_raw = carregar_dados_empresas()
+
+# Estilização CSS para recriar os Cards de Indicadores da Imagem
+st.markdown("""
+    <style>
+    .metric-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-top: 4px solid #6c757d;
+        margin-bottom: 15px;
+    }
+    .card-total { border-top-color: #2b3a4a; }
+    .card-pendente { border-top-color: #d9534f; }
+    .card-negado { border-top-color: #c9302c; }
+    .card-agendado { border-top-color: #337ab7; }
+    .card-tratado { border-top-color: #1a8a59; }
+    
+    .card-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #4a5568;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .card-value {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+    .val-total { color: #1a202c; }
+    .val-pendente { color: #d9534f; }
+    .val-negado { color: #c9302c; }
+    .val-agendado { color: #337ab7; }
+    .val-tratado { color: #1a8a59; }
+
+    .card-sub {
+        font-size: 11px;
+        color: #718096;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.title("📊 Painel de Prospecção e Controle de Carteira")
+
+if df_raw.empty:
+    st.warning("⚠️ Nenhuma empresa encontrada no banco de dados NeonDB. Por favor, execute a carga inicial primeiro.")
+    st.stop()
 
 # ==========================================
-# 3. INTERFACE DO PAINEL CRM
+# PAINEL LATERAL DE FILTROS
 # ==========================================
-st.title("🏢 Painel de Gestão e Follow-up de Vendas")
+st.sidebar.header("🔍 Filtros de Seleção")
 
-st.sidebar.header("🔍 Filtros de Busca")
+# Filtro por Responsável do Tratamento
+lista_responsaveis = sorted([r for r in df_raw['responsavel_tratamento'].unique() if r])
+lista_responsaveis.insert(0, "Sem Responsável (NÃO ATRIBUÍDO)")
 
-colunas_existentes = obter_colunas_tabela()
+filtro_responsavel = st.sidebar.multiselect(
+    "👤 Responsável pelo Tratamento:",
+    options=lista_responsaveis,
+    default=[]
+)
 
-conn = get_db_connection()
-bairros_disponiveis = ["Todos"] + list(pd.read_sql_query("SELECT DISTINCT bairro FROM empresas WHERE bairro IS NOT NULL AND bairro != '' ORDER BY bairro", conn)['bairro'])
+# Filtro por Status de Follow-up
+lista_status = ["Pendente", "Negado Operacao", "Agendado", "Tratado", "Sem Interesse", "Em Contato"]
+filtro_status = st.sidebar.multiselect(
+    "📌 Status do Follow-up:",
+    options=lista_status,
+    default=[]
+)
 
-if "porte_empresa" in colunas_existentes:
-    portes_disponiveis = ["Todos"] + list(pd.read_sql_query("SELECT DISTINCT porte_empresa FROM empresas WHERE porte_empresa IS NOT NULL AND porte_empresa != '' ORDER BY porte_empresa", conn)['porte_empresa'])
-else:
-    portes_disponiveis = ["Todos"]
-conn.close()
+# Filtro por Bairro
+lista_bairros = sorted([b for b in df_raw['bairro'].dropna().unique() if b])
+filtro_bairro = st.sidebar.multiselect("🏘️ Bairro:", options=lista_bairros, default=[])
 
-sel_bairro = st.sidebar.selectbox("Bairro:", bairros_disponiveis)
-sel_porte = st.sidebar.selectbox("Porte da Empresa:", portes_disponiveis)
-sel_status = st.sidebar.selectbox("Status Follow-up:", ["Todos", "Pendente", "Em Contato", "Agendado", "Concluído", "Sem Interesse"])
+# Filtro por CEP
+busca_cep = st.sidebar.text_input("📮 CEP (ou parte dele):", "").strip()
 
-# CONTROLE DINÂMICO DE QUANTIDADE DE REGISTROS
-sel_limite = st.sidebar.selectbox("Quantidade de Empresas Exibidas:", ["1000", "500", "5000", "10000", "Sem Limite"], index=0)
+# Filtro por Porte de Empresa
+lista_portes = sorted([p for p in df_raw['porte_empresa'].dropna().unique() if p])
+filtro_porte = st.sidebar.multiselect("🏢 Porte da Empresa:", options=lista_portes, default=[])
 
-busca_texto = st.sidebar.text_input("Buscar por CNPJ, Razão, Fantasia ou CNAE:")
+# Busca textual por Razão Social ou CNPJ
+busca_texto = st.sidebar.text_input("🔍 Buscar por Razão Social ou CNPJ:", "").strip().upper()
 
-df_exibicao = carregar_dados(sel_bairro, sel_porte, sel_status, busca_texto, sel_limite)
+# Limite de exibição para navegação fluida
+limite_linhas = st.sidebar.slider("🔢 Limite de exibição na tabela:", min_value=100, max_value=20000, value=2000, step=100)
 
-if sel_limite != "Sem Limite" and len(df_exibicao) >= int(sel_limite):
-    st.info(f"ℹ️ Exibindo o limite máximo de **{sel_limite} empresas**. Caso queira ver mais empresas deste bairro/filtro, altere a opção **'Quantidade de Empresas Exibidas'** no menu lateral.")
+# ==========================================
+# APLICAÇÃO DOS FILTROS
+# ==========================================
+df_filtrado = df_raw.copy()
 
-st.write(f"📊 **{len(df_exibicao)}** empresas encontradas na busca atual.")
+if filtro_responsavel:
+    condicoes_resp = []
+    if "Sem Responsável (NÃO ATRIBUÍDO)" in filtro_responsavel:
+        condicoes_resp.append(df_filtrado['responsavel_tratamento'] == '')
+    responsaveis_nominais = [r for r in filtro_responsavel if r != "Sem Responsável (NÃO ATRIBUÍDO)"]
+    if responsaveis_nominais:
+        condicoes_resp.append(df_filtrado['responsavel_tratamento'].isin(responsaveis_nominais))
+    
+    # Combina as opções de filtro selecionadas
+    mask_final = condicoes_resp[0]
+    for cond in condicoes_resp[1:]:
+        mask_final = mask_final | cond
+    df_filtrado = df_filtrado[mask_final]
 
-if not df_exibicao.empty:
-    col_tabela, col_detalhes = st.columns([1.8, 1.2])
+if filtro_status:
+    df_filtrado = df_filtrado[df_filtrado['status_followup'].isin(filtro_status)]
 
-    with col_tabela:
-        st.subheader("📋 Lista de Empresas")
-        
-        cols_resumo = ['cnpj_formatado', 'razao_social', 'porte_empresa', 'bairro', 'status_followup', 'telefone1']
-        cols_presentes = [c for c in cols_resumo if c in df_exibicao.columns]
-        
-        selecao = st.dataframe(
-            df_exibicao[cols_presentes],
-            use_container_width=True,
-            hide_index=True,
-            on_select="rerun",
-            selection_mode="single-row"
+if filtro_bairro:
+    df_filtrado = df_filtrado[df_filtrado['bairro'].isin(filtro_bairro)]
+
+if busca_cep:
+    df_filtrado = df_filtrado[df_filtrado['cep'].astype(str).str.contains(busca_cep, na=False)]
+
+if filtro_porte:
+    df_filtrado = df_filtrado[df_filtrado['porte_empresa'].isin(filtro_porte)]
+
+if busca_texto:
+    df_filtrado = df_filtrado[
+        df_filtrado['razao_social'].astype(str).str.contains(busca_texto, na=False) |
+        df_filtrado['cnpj_formatado'].astype(str).str.contains(busca_texto, na=False)
+    ]
+
+# ==========================================
+# DASHBOARD DE INDICADORES (CONFORME A IMAGEM)
+# ==========================================
+st.markdown("##### Indicadores dos filtros • Categorias separadas por equipe e Status")
+
+total_cnpjs = len(df_filtrado)
+qtd_pendentes = len(df_filtrado[df_filtrado['status_followup'] == 'Pendente'])
+qtd_negado = len(df_filtrado[df_filtrado['status_followup'] == 'Negado Operacao'])
+qtd_agendados = len(df_filtrado[df_filtrado['status_followup'] == 'Agendado'])
+qtd_tratados = len(df_filtrado[df_filtrado['status_followup'] == 'Tratado'])
+
+pct_pendente = (qtd_pendentes / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
+pct_negado = (qtd_negado / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
+pct_agendado = (qtd_agendados / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
+pct_tratado = (qtd_tratados / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
+
+col1, col2, col3, col4, col5 = st.columns(5)
+
+with col1:
+    st.markdown(f"""
+        <div class="metric-card card-total">
+            <div class="card-title">Total de CNPJs</div>
+            <div class="card-value val-total">{total_cnpjs:,}</div>
+            <div class="card-sub">Registros distintos</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown(f"""
+        <div class="metric-card card-pendente">
+            <div class="card-title">Pendentes</div>
+            <div class="card-value val-pendente">{qtd_pendentes:,}</div>
+            <div class="card-sub">{pct_pendente:.1f}% do total</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown(f"""
+        <div class="metric-card card-negado">
+            <div class="card-title">Negado Operação</div>
+            <div class="card-value val-negado">{qtd_negado:,}</div>
+            <div class="card-sub">{pct_negado:.1f}% do total</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    st.markdown(f"""
+        <div class="metric-card card-agendado">
+            <div class="card-title">Agendados</div>
+            <div class="card-value val-agendado">{qtd_agendados:,}</div>
+            <div class="card-sub">{pct_agendado:.1f}% do total</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col5:
+    st.markdown(f"""
+        <div class="metric-card card-tratado">
+            <div class="card-title">Tratados</div>
+            <div class="card-value val-tratado">{qtd_tratados:,}</div>
+            <div class="card-sub">{pct_tratado:.1f}% do total</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("---")
+
+# ==========================================
+# PAINEL DE ATUALIZAÇÃO / TRATAMENTO DE REGISTRO
+# ==========================================
+with st.expander("📝 Atualizar Tratamento / Responsável de um CNPJ", expanded=False):
+    col_cnp1, col_cnp2, col_cnp3 = st.columns([2, 2, 2])
+    
+    with col_cnp1:
+        cnpj_selecionado = st.selectbox(
+            "Selecione o CNPJ para atualizar:",
+            options=df_filtrado['cnpj_formatado'].head(500).tolist()
         )
-
-    with col_detalhes:
-        st.subheader("📍 Detalhes Completos da Empresa")
-        rows = selecao.selection.rows if selecao else []
+    
+    if cnpj_selecionado:
+        row_curr = df_filtrado[df_filtrado['cnpj_formatado'] == cnpj_selecionado].iloc[0]
         
-        if rows:
-            empresa = df_exibicao.iloc[rows[0]]
-
-            st.markdown(f"### {empresa.get('razao_social', '')}")
-            if pd.notna(empresa.get('nome_fantasia')) and str(empresa.get('nome_fantasia')).strip():
-                st.caption(f"**Nome Fantasia:** {empresa.get('nome_fantasia')}")
-
-            tab_cad, tab_end, tab_cont, tab_datas = st.tabs(["🏛️ Cadastro", "📍 Endereço", "📞 Contato", "📅 Situação"])
-
-            with tab_cad:
-                st.write(f"**CNPJ:** {empresa.get('cnpj_formatado', '')}")
-                st.write(f"**Porte da Empresa:** {empresa.get('porte_empresa', 'Não Informado')}")
-                st.write(f"**Matriz / Filial:** {empresa.get('matriz_filial', '')}")
-                st.write(f"**Capital Social:** R$ {empresa.get('capital_social', '0,00')}")
-                st.write(f"**CNAE Principal:** {empresa.get('cnae_principal', '')}")
-                if pd.notna(empresa.get('cnae_secundario')) and str(empresa.get('cnae_secundario')).strip():
-                    st.write(f"**CNAE Secundário:** {empresa.get('cnae_secundario')}")
-
-            with tab_end:
-                tipo_log = f"{empresa.get('tipo_logradouro', '')} ".strip() if pd.notna(empresa.get('tipo_logradouro')) else ""
-                logr = str(empresa.get('logradouro', '')).strip() if pd.notna(empresa.get('logradouro')) else ""
-                num = str(empresa.get('numero', '')).strip() if pd.notna(empresa.get('numero')) else ""
-                comp = f" - {empresa.get('complemento')}" if pd.notna(empresa.get('complemento')) and str(empresa.get('complemento')).strip() else ""
-                bairro = str(empresa.get('bairro', '')).strip() if pd.notna(empresa.get('bairro')) else ""
-                muni = str(empresa.get('municipio', '')).strip() if pd.notna(empresa.get('municipio')) else ""
-                uf = str(empresa.get('uf', '')).strip() if pd.notna(empresa.get('uf')) else ""
-                cep = str(empresa.get('cep', '')).strip() if pd.notna(empresa.get('cep')) else ""
-
-                st.write(f"**Logradouro:** {tipo_log}{logr}, {num}")
-                if comp:
-                    st.write(f"**Complemento:** {empresa.get('complemento')}")
-                st.write(f"**Bairro:** {bairro}")
-                st.write(f"**Cidade / UF:** {muni} / {uf}")
-                st.write(f"**CEP:** {cep}")
-
-                endereco_query = f"{logr}, {num}, {bairro}, {muni} - {uf}, {cep}, Brasil"
-                url_maps = f"https://www.google.com/maps/search/?api=1&query={requests.utils.quote(endereco_query)}"
-                st.link_button("🗺️ Ver Local Exato no Google Maps", url_maps, use_container_width=True)
-
-            with tab_cont:
-                ddd1 = str(empresa.get('ddd1', '')).strip() if pd.notna(empresa.get('ddd1')) else ""
-                tel1 = str(empresa.get('telefone1', '')).strip() if pd.notna(empresa.get('telefone1')) else ""
-                ddd2 = str(empresa.get('ddd2', '')).strip() if pd.notna(empresa.get('ddd2')) else ""
-                tel2 = str(empresa.get('telefone2', '')).strip() if pd.notna(empresa.get('telefone2')) else ""
-                ddd_fax = str(empresa.get('ddd_fax', '')).strip() if pd.notna(empresa.get('ddd_fax')) else ""
-                fax = str(empresa.get('fax', '')).strip() if pd.notna(empresa.get('fax')) else ""
-                email = str(empresa.get('correio_eletronico', '')).strip() if pd.notna(empresa.get('correio_eletronico')) else ""
-
-                st.write(f"**Telefone 1:** ({ddd1}) {tel1}" if ddd1 or tel1 else f"**Telefone 1:** {tel1}")
-                if tel2:
-                    st.write(f"**Telefone 2:** ({ddd2}) {tel2}" if ddd2 else f"**Telefone 2:** {tel2}")
-                if fax:
-                    st.write(f"**Fax:** ({ddd_fax}) {fax}" if ddd_fax else f"**Fax:** {fax}")
-                st.write(f"**E-mail:** {email if email else 'Não Informado'}")
-
-            with tab_datas:
-                st.write(f"**Data Início Atividade:** {empresa.get('data_inicio_atividade', '')}")
-                st.write(f"**Situação Cadastral:** {empresa.get('situacao_cadastral', '')}")
-                st.write(f"**Data da Situação:** {empresa.get('data_situacao', '')}")
-                st.write(f"**Motivo da Situação:** {empresa.get('motivo_situacao', 'SEM MOTIVO')}")
-                if pd.notna(empresa.get('situacao_especial')) and str(empresa.get('situacao_especial')).strip():
-                    st.write(f"**Situação Especial:** {empresa.get('situacao_especial')}")
-                    st.write(f"**Data Situação Especial:** {empresa.get('data_situacao_especial')}")
-
-            st.divider()
-
-            st.write("📝 **Registrar Follow-up:**")
-            opcoes_status = ["Pendente", "Em Contato", "Agendado", "Concluído", "Sem Interesse"]
-            st_atual = empresa.get('status_followup', 'Pendente')
-            idx_st = opcoes_status.index(st_atual) if st_atual in opcoes_status else 0
-            novo_st = st.selectbox("Status:", opcoes_status, index=idx_st)
+        with col_cnp2:
+            novo_resp = st.text_input("Responsável pelo Tratamento:", value=row_curr['responsavel_tratamento'])
+        
+        with col_cnp3:
+            novo_status = st.selectbox(
+                "Novo Status:",
+                options=lista_status,
+                index=lista_status.index(row_curr['status_followup']) if row_curr['status_followup'] in lista_status else 0
+            )
             
-            obs_atual = empresa.get('observacoes', '')
-            novas_obs = st.text_area("Observações:", value=obs_atual if pd.notna(obs_atual) else "")
+        novas_obs = st.text_area("Observações do Atendimento:", value=row_curr['observacoes'])
+        
+        if st.button("💾 Salvar Alterações no Banco"):
+            with engine.begin() as conn:
+                conn.execute(text("""
+                    UPDATE empresas 
+                    SET responsavel_tratamento = :resp,
+                        status_followup = :stat,
+                        observacoes = :obs
+                    WHERE cnpj_formatado = :cnpj
+                """), {"resp": novo_resp, "stat": novo_status, "obs": novas_obs, "cnpj": cnpj_selecionado})
+            st.success(f"✅ Tratamento atualizado com sucesso para {cnpj_selecionado}!")
+            st.cache_data.clear()
+            st.rerun()
 
-            if st.button("💾 Salvar Follow-up", use_container_width=True):
-                atualizar_followup(empresa['cnpj_formatado'], novo_st, novas_obs)
-                st.success("Salvo com sucesso!")
-                st.rerun()
-        else:
-            st.info("👆 Clique em uma linha da tabela para ver a localização e todos os detalhes.")
-else:
-    st.warning("Nenhuma empresa encontrada com os filtros selecionados.")
+# ==========================================
+# TABELA PRINCIPAL DE DADOS COM CEP E RESPONSÁVEL
+# ==========================================
+st.subheader("📋 Relação de Empresas Filtradas")
+
+colunas_exibicao = [
+    'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
+    'responsavel_tratamento', 'status_followup', 'cep', 'bairro',
+    'logradouro', 'numero', 'telefone1', 'correio_eletronico', 'observacoes'
+]
+
+df_tabela = df_filtrado[colunas_exibicao].head(limite_linhas)
+
+st.dataframe(
+    df_tabela,
+    column_config={
+        "cnpj_formatado": "CNPJ",
+        "razao_social": "Razão Social",
+        "nome_fantasia": "Nome Fantasia",
+        "porte_empresa": "Porte",
+        "responsavel_tratamento": "Tratado Por",
+        "status_followup": "Status",
+        "cep": "CEP",
+        "bairro": "Bairro",
+        "logradouro": "Logradouro",
+        "numero": "Nº",
+        "telefone1": "Telefone",
+        "correio_eletronico": "E-mail",
+        "observacoes": "Observações do Follow-up"
+    },
+    hide_index=True,
+    use_container_width=True
+)
+
+st.caption(f"Exibindo os primeiros {len(df_tabela)} registros de {len(df_filtrado)} encontrados.")
