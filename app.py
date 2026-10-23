@@ -12,8 +12,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# URI de Conexão com o NeonDB (Formato nativo PostgreSQL)
-POSTGRES_URI = "postgresql://neondb_owner:npg_bNDxjo9L2giC@ep-empty-hall-b4zx7bew-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
+# URI de Conexão com o NeonDB (Utilizando o driver psycopg2)
+POSTGRES_URI = "postgresql+psycopg2://neondb_owner:npg_bNDxjo9L2giC@ep-empty-hall-b4zx7bew-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
 @st.cache_resource
 def get_db_engine():
