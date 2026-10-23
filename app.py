@@ -21,27 +21,7 @@ def get_db_engine():
 
 engine = get_db_engine()
 
-# Garante a estrutura completa de colunas no NeonDB
-def inicializar_estrutura_crm():
-    with engine.begin() as conn:
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS empresas (
-                cnpj_formatado VARCHAR PRIMARY KEY,
-                razao_social VARCHAR, nome_fantasia VARCHAR, porte_empresa VARCHAR, situacao_cadastral VARCHAR,
-                matriz_filial VARCHAR, uf VARCHAR, municipio VARCHAR, cnae_principal VARCHAR, data_inicio_atividade VARCHAR,
-                correio_eletronico VARCHAR, ddd1 VARCHAR, telefone1 VARCHAR, tipo_logradouro VARCHAR, logradouro VARCHAR,
-                numero VARCHAR, complemento VARCHAR, bairro VARCHAR, cep VARCHAR, capital_social VARCHAR,
-                status_followup VARCHAR DEFAULT 'Pendente',
-                observacoes TEXT DEFAULT '',
-                responsavel_tratamento VARCHAR DEFAULT ''
-            );
-        """))
-        conn.execute(text("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS responsavel_tratamento VARCHAR DEFAULT '';"))
-        conn.execute(text("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS ddd1 VARCHAR DEFAULT '';"))
-
-inicializar_estrutura_crm()
-
-# Estilização dos Cards do Dashboard (Estilo da Imagem)
+# Estilização dos Cards do Dashboard
 st.markdown("""
     <style>
     .metric-card {
@@ -85,57 +65,46 @@ st.markdown("""
 
 st.title("📊 Painel de Prospecção e Controle de Carteira")
 
-# Carrega listas de opções levemente para os filtros
-@st.cache_data(ttl=300)
-def obter_opcoes_filtros():
-    with engine.connect() as conn:
-        responsaveis = [r[0] for r in conn.execute(text("SELECT DISTINCT responsavel_tratamento FROM empresas WHERE responsavel_tratamento IS NOT NULL AND responsavel_tratamento != '' ORDER BY responsavel_tratamento")).fetchall()]
-        bairros = [b[0] for b in conn.execute(text("SELECT DISTINCT bairro FROM empresas WHERE bairro IS NOT NULL AND bairro != '' ORDER BY bairro LIMIT 1000")).fetchall()]
-        portes = [p[0] for p in conn.execute(text("SELECT DISTINCT porte_empresa FROM empresas WHERE porte_empresa IS NOT NULL AND porte_empresa != '' ORDER BY porte_empresa")).fetchall()]
-    return responsaveis, bairros, portes
-
-lista_responsaveis_db, lista_bairros, lista_portes = obter_opcoes_filtros()
-
 # ==========================================
 # PAINEL LATERAL DE FILTROS
 # ==========================================
 st.sidebar.header("🔍 Filtros de Seleção")
 
-lista_responsaveis = ["Sem Responsável (NÃO ATRIBUÍDO)"] + lista_responsaveis_db
-filtro_responsavel = st.sidebar.multiselect("👤 Responsável pelo Tratamento:", options=lista_responsaveis, default=[])
+busca_responsavel = st.sidebar.text_input("👤 Responsável pelo Tratamento:", "").strip()
 
 lista_status = ["Pendente", "Negado Operacao", "Agendado", "Tratado", "Sem Interesse", "Em Contato"]
 filtro_status = st.sidebar.multiselect("📌 Status do Follow-up:", options=lista_status, default=[])
 
-filtro_bairro = st.sidebar.multiselect("🏘️ Bairro:", options=lista_bairros, default=[])
+busca_bairro = st.sidebar.text_input("🏘️ Bairro (ou parte dele):", "").strip().upper()
 busca_cep = st.sidebar.text_input("📮 CEP (ou parte dele):", "").strip()
+
+lista_portes = ["Micro Empresa (ME)", "Empresa de Pequeno Porte (EPP)", "Demais (Médio/Grande Porte)", "Não Informado"]
 filtro_porte = st.sidebar.multiselect("🏢 Porte da Empresa:", options=lista_portes, default=[])
+
 busca_texto = st.sidebar.text_input("🔍 Buscar por Razão Social ou CNPJ:", "").strip().upper()
-limite_linhas = st.sidebar.slider("🔢 Limite de exibição:", min_value=100, max_value=5000, value=1000, step=100)
+
+# Controles de Paginação
+registros_por_pagina = 100
+pagina_atual = st.sidebar.number_input("📄 Página:", min_value=1, value=1, step=1)
+offset_val = (pagina_atual - 1) * registros_por_pagina
 
 # ==========================================
-# CONSTRUÇÃO DA CONSULTA SQL DINÂMICA (OFFLOADING PARA O POSTGRES)
+# CONSTRUÇÃO DA CONSULTA SQL DINÂMICA
 # ==========================================
 where_clauses = ["1=1"]
 params = {}
 
-if filtro_responsavel:
-    conds = []
-    if "Sem Responsável (NÃO ATRIBUÍDO)" in filtro_responsavel:
-        conds.append("(responsavel_tratamento IS NULL OR responsavel_tratamento = '')")
-    resp_nom = [r for r in filtro_responsavel if r != "Sem Responsável (NÃO ATRIBUÍDO)"]
-    if resp_nom:
-        conds.append("responsavel_tratamento IN :responsaveis")
-        params["responsaveis"] = tuple(resp_nom)
-    where_clauses.append(f"({' OR '.join(conds)})")
+if busca_responsavel:
+    where_clauses.append("responsavel_tratamento ILIKE :resp")
+    params["resp"] = f"%{busca_responsavel}%"
 
 if filtro_status:
     where_clauses.append("status_followup IN :status_list")
     params["status_list"] = tuple(filtro_status)
 
-if filtro_bairro:
-    where_clauses.append("bairro IN :bairros")
-    params["bairros"] = tuple(filtro_bairro)
+if busca_bairro:
+    where_clauses.append("bairro ILIKE :bairro")
+    params["bairro"] = f"%{busca_bairro}%"
 
 if busca_cep:
     where_clauses.append("cep LIKE :cep")
@@ -146,12 +115,12 @@ if filtro_porte:
     params["portes"] = tuple(filtro_porte)
 
 if busca_texto:
-    where_clauses.append("(razao_social LIKE :texto OR cnpj_formatado LIKE :texto)")
+    where_clauses.append("(razao_social ILIKE :texto OR cnpj_formatado LIKE :texto)")
     params["texto"] = f"%{busca_texto}%"
 
 sql_where = " WHERE " + " AND ".join(where_clauses)
 
-# Consulta agregada de contagem ultrarrápida no banco
+# Executa consulta leve de KPIs agregados diretamente no PostgreSQL
 query_kpis = f"""
     SELECT 
         COUNT(*) AS total,
@@ -162,8 +131,12 @@ query_kpis = f"""
     FROM empresas {sql_where}
 """
 
-with engine.connect() as conn:
-    kpi_res = conn.execute(text(query_kpis), params).fetchone()
+try:
+    with engine.connect() as conn:
+        kpi_res = conn.execute(text(query_kpis), params).fetchone()
+except Exception as e:
+    st.error(f"Erro de conexão com o banco de dados: {e}")
+    st.stop()
 
 total_cnpjs = kpi_res.total or 0
 qtd_pendentes = kpi_res.pendentes or 0
@@ -177,7 +150,7 @@ pct_agendado = (qtd_agendados / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
 pct_tratado = (qtd_tratados / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
 
 # ==========================================
-# DASHBOARD DE INDICADORES (ESTILO DA IMAGEM)
+# DASHBOARD DE INDICADORES
 # ==========================================
 st.markdown("##### Indicadores dos filtros • Categorias separadas por equipe e Status")
 
@@ -231,7 +204,7 @@ with col5:
 st.markdown("---")
 
 # ==========================================
-# CONSULTA DOS REGISTROS DA TABELA COM LIMIT
+# CONSULTA PAGINADA
 # ==========================================
 query_dados = f"""
     SELECT 
@@ -241,7 +214,8 @@ query_dados = f"""
         COALESCE(ddd1, '') AS ddd1, COALESCE(telefone1, '') AS telefone1,
         correio_eletronico, observacoes
     FROM empresas {sql_where}
-    LIMIT {limite_linhas}
+    ORDER BY cnpj_formatado
+    LIMIT {registros_por_pagina} OFFSET {offset_val}
 """
 
 df_tabela = pd.read_sql(text(query_dados), engine, params=params)
@@ -253,16 +227,16 @@ df_tabela['telefone1'] = df_tabela['telefone1'].astype(str).str.strip().str.repl
 def formatar_telefone(row):
     ddd = row['ddd1']
     tel = row['telefone1']
-    if ddd and tel and ddd != 'nan' and tel != 'nan':
+    if ddd and tel and ddd != 'nan' and tel != 'nan' and ddd != 'None' and tel != 'None':
         return f"({ddd}) {tel}"
-    elif tel and tel != 'nan':
+    elif tel and tel != 'nan' and tel != 'None':
         return tel
     return ""
 
 df_tabela['telefone_completo'] = df_tabela.apply(formatar_telefone, axis=1)
 
 # ==========================================
-# JANELA MODAL DE TRATAMENTO / FOLLOW-UP (POP-UP)
+# JANELA MODAL DE TRATAMENTO / FOLLOW-UP
 # ==========================================
 @st.dialog("📝 Atualizar Follow-up / Tratamento de Empresa")
 def abrir_modal_tratamento(cnpj):
@@ -278,12 +252,12 @@ def abrir_modal_tratamento(cnpj):
     st.markdown("---")
     
     with st.form("form_tratamento_modal"):
-        resp_atual = st.text_input("👤 Responsável pelo Tratamento:", value=row.get('responsavel_tratamento', ''))
+        resp_atual = st.text_input("👤 Responsável pelo Tratamento:", value=row.get('responsavel_tratamento', '') or '')
         
         idx_status = lista_status.index(row['status_followup']) if row['status_followup'] in lista_status else 0
         status_novo = st.selectbox("📌 Status do Follow-up:", options=lista_status, index=idx_status)
         
-        obs_nova = st.text_area("💬 Observações do Atendimento:", value=row.get('observacoes', ''), height=120)
+        obs_nova = st.text_area("💬 Observações do Atendimento:", value=row.get('observacoes', '') or '', height=120)
         
         btn_salvar = st.form_submit_button("💾 Salvar Tratamento", use_container_width=True)
         
@@ -297,7 +271,6 @@ def abrir_modal_tratamento(cnpj):
                     WHERE cnpj_formatado = :cnpj
                 """), {"resp": resp_atual, "stat": status_novo, "obs": obs_nova, "cnpj": cnpj})
             st.success("✅ Follow-up salvo com sucesso!")
-            st.cache_data.clear()
             st.rerun()
 
 # ==========================================
@@ -312,7 +285,7 @@ else:
 
     with col_sel1:
         empresa_para_tratar = st.selectbox(
-            "⚡ Clique ou busque a empresa para abrir a janela de tratamento:",
+            "⚡ Clique para selecionar a empresa que deseja tratar:",
             options=["-- Selecione uma empresa para tratar --"] + df_tabela['cnpj_formatado'].tolist(),
             format_func=lambda x: f"{x} - {df_tabela[df_tabela['cnpj_formatado']==x]['razao_social'].values[0]}" if x != "-- Selecione uma empresa para tratar --" else x
         )
@@ -351,4 +324,5 @@ else:
         use_container_width=True
     )
 
-    st.caption(f"Exibindo os primeiros {len(df_tabela)} registros de {total_cnpjs:,} encontrados no NeonDB.")
+    total_paginas = (total_cnpjs // registros_por_pagina) + (1 if total_cnpjs % registros_por_pagina > 0 else 0)
+    st.caption(f"Exibindo página {pagina_atual} de {total_paginas} (Mostrando {len(df_tabela)} registros nesta página de um total de {total_cnpjs:,} encontrados no banco).")
