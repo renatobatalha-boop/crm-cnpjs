@@ -29,9 +29,9 @@ def inicializar_estrutura_crm():
                 cnpj_formatado VARCHAR PRIMARY KEY,
                 razao_social VARCHAR, nome_fantasia VARCHAR, porte_empresa VARCHAR, situacao_cadastral VARCHAR,
                 matriz_filial VARCHAR, uf VARCHAR, municipio VARCHAR, cnae_principal VARCHAR, data_inicio_atividade VARCHAR,
-                correio_eletronico VARCHAR, telefone1 VARCHAR, motivo_situacao VARCHAR, data_situacao VARCHAR,
+                correio_eletronico VARCHAR, telefone1 VARCHAR, ddd1 VARCHAR, motivo_situacao VARCHAR, data_situacao VARCHAR,
                 cidade_exterior VARCHAR, pais VARCHAR, cnae_secundario VARCHAR, tipo_logradouro VARCHAR, logradouro VARCHAR,
-                numero VARCHAR, complemento VARCHAR, bairro VARCHAR, cep VARCHAR, ddd1 VARCHAR, ddd2 VARCHAR, telefone2 VARCHAR,
+                numero VARCHAR, complemento VARCHAR, bairro VARCHAR, cep VARCHAR, ddd2 VARCHAR, telefone2 VARCHAR,
                 ddd_fax VARCHAR, fax VARCHAR, situacao_especial VARCHAR, data_situacao_especial VARCHAR, capital_social VARCHAR,
                 status_followup VARCHAR DEFAULT 'Pendente',
                 observacoes TEXT DEFAULT '',
@@ -39,6 +39,7 @@ def inicializar_estrutura_crm():
             );
         """))
         conn.execute(text("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS responsavel_tratamento VARCHAR DEFAULT '';"))
+        conn.execute(text("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS ddd1 VARCHAR DEFAULT '';"))
 
 inicializar_estrutura_crm()
 
@@ -49,11 +50,28 @@ def carregar_dados_empresas():
         SELECT 
             cnpj_formatado, razao_social, nome_fantasia, porte_empresa, situacao_cadastral,
             matriz_filial, uf, municipio, cnae_principal, data_inicio_atividade,
-            correio_eletronico, telefone1, bairro, cep, logradouro, numero, complemento,
+            correio_eletronico, COALESCE(ddd1, '') AS ddd1, COALESCE(telefone1, '') AS telefone1, 
+            bairro, cep, logradouro, numero, complemento,
             capital_social, status_followup, observacoes, COALESCE(responsavel_tratamento, '') AS responsavel_tratamento
         FROM empresas
     """
-    return pd.read_sql(query, engine)
+    df = pd.read_sql(query, engine)
+    
+    # Formata a coluna Telefone Completo combinando DDD + Telefone
+    df['ddd1'] = df['ddd1'].astype(str).str.strip().str.replace('.0', '', regex=False)
+    df['telefone1'] = df['telefone1'].astype(str).str.strip().str.replace('.0', '', regex=False)
+    
+    def formatar_telefone(row):
+        ddd = row['ddd1']
+        tel = row['telefone1']
+        if ddd and tel and ddd != 'nan' and tel != 'nan':
+            return f"({ddd}) {tel}"
+        elif tel and tel != 'nan':
+            return tel
+        return ""
+
+    df['telefone_completo'] = df.apply(formatar_telefone, axis=1)
+    return df
 
 df_raw = carregar_dados_empresas()
 
@@ -250,7 +268,7 @@ def abrir_modal_tratamento(cnpj):
     row = df_raw[df_raw['cnpj_formatado'] == cnpj].iloc[0]
     
     st.markdown(f"**Empresa:** {row['razao_social']}")
-    st.markdown(f"**CNPJ:** `{row['cnpj_formatado']}` | **CEP:** `{row['cep']}` | **Telefone:** `{row['telefone1']}`")
+    st.markdown(f"**CNPJ:** `{row['cnpj_formatado']}` | **CEP:** `{row['cep']}` | **Telefone:** `{row['telefone_completo']}`")
     st.markdown("---")
     
     with st.form("form_tratamento_modal"):
@@ -303,7 +321,7 @@ with col_sel2:
 colunas_exibicao = [
     'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
     'responsavel_tratamento', 'status_followup', 'cep', 'bairro',
-    'logradouro', 'numero', 'telefone1', 'correio_eletronico', 'observacoes'
+    'logradouro', 'numero', 'telefone_completo', 'correio_eletronico', 'observacoes'
 ]
 
 st.dataframe(
@@ -319,7 +337,7 @@ st.dataframe(
         "bairro": "Bairro",
         "logradouro": "Logradouro",
         "numero": "Nº",
-        "telefone1": "Telefone",
+        "telefone_completo": "Telefone com DDD",
         "correio_eletronico": "E-mail",
         "observacoes": "Observações do Follow-up"
     },
