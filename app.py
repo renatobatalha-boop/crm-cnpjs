@@ -12,14 +12,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# URI de Conexão com o NeonDB
-POSTGRES_URI = "postgresql+psycopg2://neondb_owner:npg_bNDxjo9L2giC@ep-empty-hall-b4zx7bew-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
+# URI de Conexão com o NeonDB (Formato nativo PostgreSQL)
+POSTGRES_URI = "postgresql://neondb_owner:npg_bNDxjo9L2giC@ep-empty-hall-b4zx7bew-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
 @st.cache_resource
 def get_db_engine():
-    return create_engine(POSTGRES_URI, pool_pre_ping=True)
+    return create_engine(POSTGRES_URI, pool_pre_ping=True, pool_size=5, max_overflow=10)
 
-engine = get_db_engine()
+try:
+    engine = get_db_engine()
+except Exception as e:
+    st.error(f"Erro ao conectar ao banco de dados: {e}")
+    st.stop()
 
 # Estilização dos Cards do Dashboard
 st.markdown("""
@@ -120,7 +124,7 @@ if busca_texto:
 
 sql_where = " WHERE " + " AND ".join(where_clauses)
 
-# Executa consulta leve de KPIs agregados diretamente no PostgreSQL
+# Executa consulta leve de KPIs
 query_kpis = f"""
     SELECT 
         COUNT(*) AS total,
@@ -135,7 +139,7 @@ try:
     with engine.connect() as conn:
         kpi_res = conn.execute(text(query_kpis), params).fetchone()
 except Exception as e:
-    st.error(f"Erro de conexão com o banco de dados: {e}")
+    st.error(f"Erro ao consultar indicadores no banco: {e}")
     st.stop()
 
 total_cnpjs = kpi_res.total or 0
@@ -218,7 +222,11 @@ query_dados = f"""
     LIMIT {registros_por_pagina} OFFSET {offset_val}
 """
 
-df_tabela = pd.read_sql(text(query_dados), engine, params=params)
+try:
+    df_tabela = pd.read_sql(text(query_dados), engine, params=params)
+except Exception as e:
+    st.error(f"Erro ao carregar dados da tabela: {e}")
+    st.stop()
 
 # Formatação de telefone
 df_tabela['ddd1'] = df_tabela['ddd1'].astype(str).str.strip().str.replace('.0', '', regex=False)
@@ -227,9 +235,9 @@ df_tabela['telefone1'] = df_tabela['telefone1'].astype(str).str.strip().str.repl
 def formatar_telefone(row):
     ddd = row['ddd1']
     tel = row['telefone1']
-    if ddd and tel and ddd != 'nan' and tel != 'nan' and ddd != 'None' and tel != 'None':
+    if ddd and tel and ddd not in ['nan', 'None'] and tel not in ['nan', 'None']:
         return f"({ddd}) {tel}"
-    elif tel and tel != 'nan' and tel != 'None':
+    elif tel and tel not in ['nan', 'None']:
         return tel
     return ""
 
