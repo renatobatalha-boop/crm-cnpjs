@@ -21,7 +21,7 @@ def get_db_engine():
 
 engine = get_db_engine()
 
-# Garante que as colunas de CRM existam no NeonDB
+# Garante a estrutura completa de colunas no NeonDB
 def inicializar_estrutura_crm():
     with engine.begin() as conn:
         conn.execute(text("""
@@ -42,7 +42,7 @@ def inicializar_estrutura_crm():
 
 inicializar_estrutura_crm()
 
-# Carrega os dados brutos filtrados do banco na nuvem
+# Carrega os dados do banco
 @st.cache_data(ttl=60)
 def carregar_dados_empresas():
     query = """
@@ -53,12 +53,11 @@ def carregar_dados_empresas():
             capital_social, status_followup, observacoes, COALESCE(responsavel_tratamento, '') AS responsavel_tratamento
         FROM empresas
     """
-    df = pd.read_sql(query, engine)
-    return df
+    return pd.read_sql(query, engine)
 
 df_raw = carregar_dados_empresas()
 
-# Estilização CSS para recriar os Cards de Indicadores da Imagem
+# Estilização dos Cards do Dashboard (Estilo da Imagem)
 st.markdown("""
     <style>
     .metric-card {
@@ -103,7 +102,7 @@ st.markdown("""
 st.title("📊 Painel de Prospecção e Controle de Carteira")
 
 if df_raw.empty:
-    st.warning("⚠️ Nenhuma empresa encontrada no banco de dados NeonDB. Por favor, execute a carga inicial primeiro.")
+    st.warning("⚠️ Nenhuma empresa encontrada no banco de dados NeonDB. Execute a carga inicial no servidor.")
     st.stop()
 
 # ==========================================
@@ -111,7 +110,7 @@ if df_raw.empty:
 # ==========================================
 st.sidebar.header("🔍 Filtros de Seleção")
 
-# Filtro por Responsável do Tratamento
+# Filtro por Responsável pelo Tratamento
 lista_responsaveis = sorted([r for r in df_raw['responsavel_tratamento'].unique() if r])
 lista_responsaveis.insert(0, "Sem Responsável (NÃO ATRIBUÍDO)")
 
@@ -123,11 +122,7 @@ filtro_responsavel = st.sidebar.multiselect(
 
 # Filtro por Status de Follow-up
 lista_status = ["Pendente", "Negado Operacao", "Agendado", "Tratado", "Sem Interesse", "Em Contato"]
-filtro_status = st.sidebar.multiselect(
-    "📌 Status do Follow-up:",
-    options=lista_status,
-    default=[]
-)
+filtro_status = st.sidebar.multiselect("📌 Status do Follow-up:", options=lista_status, default=[])
 
 # Filtro por Bairro
 lista_bairros = sorted([b for b in df_raw['bairro'].dropna().unique() if b])
@@ -136,15 +131,15 @@ filtro_bairro = st.sidebar.multiselect("🏘️ Bairro:", options=lista_bairros,
 # Filtro por CEP
 busca_cep = st.sidebar.text_input("📮 CEP (ou parte dele):", "").strip()
 
-# Filtro por Porte de Empresa
+# Filtro por Porte
 lista_portes = sorted([p for p in df_raw['porte_empresa'].dropna().unique() if p])
 filtro_porte = st.sidebar.multiselect("🏢 Porte da Empresa:", options=lista_portes, default=[])
 
 # Busca textual por Razão Social ou CNPJ
 busca_texto = st.sidebar.text_input("🔍 Buscar por Razão Social ou CNPJ:", "").strip().upper()
 
-# Limite de exibição para navegação fluida
-limite_linhas = st.sidebar.slider("🔢 Limite de exibição na tabela:", min_value=100, max_value=20000, value=2000, step=100)
+# Limite de exibição
+limite_linhas = st.sidebar.slider("🔢 Limite de exibição:", min_value=100, max_value=20000, value=2000, step=100)
 
 # ==========================================
 # APLICAÇÃO DOS FILTROS
@@ -159,7 +154,6 @@ if filtro_responsavel:
     if responsaveis_nominais:
         condicoes_resp.append(df_filtrado['responsavel_tratamento'].isin(responsaveis_nominais))
     
-    # Combina as opções de filtro selecionadas
     mask_final = condicoes_resp[0]
     for cond in condicoes_resp[1:]:
         mask_final = mask_final | cond
@@ -249,33 +243,27 @@ with col5:
 st.markdown("---")
 
 # ==========================================
-# PAINEL DE ATUALIZAÇÃO / TRATAMENTO DE REGISTRO
+# JANELA MODAL DE TRATAMENTO / FOLLOW-UP (POP-UP)
 # ==========================================
-with st.expander("📝 Atualizar Tratamento / Responsável de um CNPJ", expanded=False):
-    col_cnp1, col_cnp2, col_cnp3 = st.columns([2, 2, 2])
+@st.dialog("📝 Atualizar Follow-up / Tratamento de Empresa")
+def abrir_modal_tratamento(cnpj):
+    row = df_raw[df_raw['cnpj_formatado'] == cnpj].iloc[0]
     
-    with col_cnp1:
-        cnpj_selecionado = st.selectbox(
-            "Selecione o CNPJ para atualizar:",
-            options=df_filtrado['cnpj_formatado'].head(500).tolist()
-        )
+    st.markdown(f"**Empresa:** {row['razao_social']}")
+    st.markdown(f"**CNPJ:** `{row['cnpj_formatado']}` | **CEP:** `{row['cep']}` | **Telefone:** `{row['telefone1']}`")
+    st.markdown("---")
     
-    if cnpj_selecionado:
-        row_curr = df_filtrado[df_filtrado['cnpj_formatado'] == cnpj_selecionado].iloc[0]
+    with st.form("form_tratamento_modal"):
+        resp_atual = st.text_input("👤 Responsável pelo Tratamento:", value=row['responsavel_tratamento'])
         
-        with col_cnp2:
-            novo_resp = st.text_input("Responsável pelo Tratamento:", value=row_curr['responsavel_tratamento'])
+        idx_status = lista_status.index(row['status_followup']) if row['status_followup'] in lista_status else 0
+        status_novo = st.selectbox("📌 Status do Follow-up:", options=lista_status, index=idx_status)
         
-        with col_cnp3:
-            novo_status = st.selectbox(
-                "Novo Status:",
-                options=lista_status,
-                index=lista_status.index(row_curr['status_followup']) if row_curr['status_followup'] in lista_status else 0
-            )
-            
-        novas_obs = st.text_area("Observações do Atendimento:", value=row_curr['observacoes'])
+        obs_nova = st.text_area("💬 Observações do Atendimento:", value=row['observacoes'], height=120)
         
-        if st.button("💾 Salvar Alterações no Banco"):
+        btn_salvar = st.form_submit_button("💾 Salvar Tratamento", use_container_width=True)
+        
+        if btn_salvar:
             with engine.begin() as conn:
                 conn.execute(text("""
                     UPDATE empresas 
@@ -283,15 +271,34 @@ with st.expander("📝 Atualizar Tratamento / Responsável de um CNPJ", expanded
                         status_followup = :stat,
                         observacoes = :obs
                     WHERE cnpj_formatado = :cnpj
-                """), {"resp": novo_resp, "stat": novo_status, "obs": novas_obs, "cnpj": cnpj_selecionado})
-            st.success(f"✅ Tratamento atualizado com sucesso para {cnpj_selecionado}!")
+                """), {"resp": resp_atual, "stat": status_novo, "obs": obs_nova, "cnpj": cnpj})
+            st.success("✅ Follow-up salvo com sucesso!")
             st.cache_data.clear()
             st.rerun()
 
 # ==========================================
-# TABELA PRINCIPAL DE DADOS COM CEP E RESPONSÁVEL
+# TABELA PRINCIPAL COM BOTÃO DE ABRIR MODAL
 # ==========================================
 st.subheader("📋 Relação de Empresas Filtradas")
+
+df_tabela = df_filtrado.head(limite_linhas).copy()
+
+# Seletor rápido para abrir a janela de tratamento
+col_sel1, col_sel2 = st.columns([3, 1])
+
+with col_sel1:
+    empresa_para_tratar = st.selectbox(
+        "⚡ Clique ou busque a empresa para abrir a janela de tratamento:",
+        options=["-- Selecione uma empresa para tratar --"] + df_tabela['cnpj_formatado'].tolist(),
+        format_func=lambda x: f"{x} - {df_tabela[df_tabela['cnpj_formatado']==x]['razao_social'].values[0]}" if x != "-- Selecione uma empresa para tratar --" else x
+    )
+
+with col_sel2:
+    st.write(" ")
+    st.write(" ")
+    if empresa_para_tratar != "-- Selecione uma empresa para tratar --":
+        if st.button("✏️ Abrir Janela de Tratamento", use_container_width=True):
+            abrir_modal_tratamento(empresa_para_tratar)
 
 colunas_exibicao = [
     'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
@@ -299,10 +306,8 @@ colunas_exibicao = [
     'logradouro', 'numero', 'telefone1', 'correio_eletronico', 'observacoes'
 ]
 
-df_tabela = df_filtrado[colunas_exibicao].head(limite_linhas)
-
 st.dataframe(
-    df_tabela,
+    df_tabela[colunas_exibicao],
     column_config={
         "cnpj_formatado": "CNPJ",
         "razao_social": "Razão Social",
