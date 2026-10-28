@@ -26,11 +26,10 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# ESTILIZAÇÃO CSS CUSTOMIZADA (LAYOUT DA IMAGEM)
+# ESTILIZAÇÃO CSS CUSTOMIZADA
 # ==========================================
 st.markdown("""
     <style>
-    /* Oculta topo padrão do Streamlit */
     header {visibility: hidden;}
     .block-container {
         padding-top: 1rem;
@@ -63,16 +62,6 @@ st.markdown("""
         font-weight: 700;
         padding: 4px 12px;
         border-radius: 20px;
-    }
-
-    /* Painel de Filtros e Cards */
-    .filter-box {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 18px;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
     /* Cards de Indicadores */
@@ -148,7 +137,7 @@ if opcao_menu != "📊 Relatórios e Carteira":
     st.stop()
 
 # ==========================================
-# SEÇÃO: CONSULTAS FREQUENTES (BOTÕES RÁPIDOS)
+# CONSULTAS FREQUENTES
 # ==========================================
 st.markdown("##### ⚡ CONSULTAS FREQUENTES")
 col_b1, col_b2, col_b3, col_b4, col_b5, col_b6 = st.columns(6)
@@ -176,7 +165,7 @@ with col_b6:
         st.session_state["quick_filter"] = "SemResp"
 
 # ==========================================
-# GRID DE FILTROS NA PÁGINA PRINCIPAL
+# FILTROS E CONTROLE DE QUANTIDADE DE LINHAS
 # ==========================================
 with st.expander("🔍 FILTROS E PARÂMETROS DE BUSCA", expanded=True):
     col_f1, col_f2, col_f3, col_f4 = st.columns(4)
@@ -198,19 +187,27 @@ with st.expander("🔍 FILTROS E PARÂMETROS DE BUSCA", expanded=True):
     with col_f4:
         busca_cep = st.text_input("CEP (ou parte dele):", "")
 
-    col_f5, col_f6, col_f7 = st.columns([2, 2, 1])
+    col_f5, col_f6, col_f7, col_f8 = st.columns([2, 2, 1, 1])
     with col_f5:
         busca_bairro = st.text_input("Bairro:", "")
     with col_f6:
         busca_texto = st.text_input("Razão Social ou CNPJ:", "")
+    
+    # Campo para selecionar quantas linhas deseja exibir
     with col_f7:
+        registros_por_pagina = st.selectbox(
+            "Linhas por Página:",
+            options=[50, 100, 250, 500, 1000],
+            index=1
+        )
+        
+    with col_f8:
         pagina_atual = st.number_input("Página:", min_value=1, value=1, step=1)
 
-registros_por_pagina = 100
 offset_val = (pagina_atual - 1) * registros_por_pagina
 
 # ==========================================
-# QUERY DINÂMICA SQL NO BANCO DE DADOS
+# QUERY DINÂMICA SQL NO POSTGRESQL
 # ==========================================
 where_clauses = ["1=1"]
 params = {}
@@ -244,7 +241,7 @@ if busca_texto.strip():
 
 sql_where = " WHERE " + " AND ".join(where_clauses)
 
-# Consulta agregada de KPIs
+# Consulta de indicadores (KPIs)
 query_kpis = f"""
     SELECT 
         COUNT(*) AS total,
@@ -270,7 +267,7 @@ pct_agendado = (qtd_agendados / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
 pct_tratado = (qtd_tratados / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
 
 # ==========================================
-# CARDS DE INDICADORES (CONFORME SOLICITADO)
+# CARDS DE INDICADORES
 # ==========================================
 col_c1, col_c2, col_c3, col_c4, col_c5 = st.columns(5)
 
@@ -322,7 +319,7 @@ with col_c5:
 st.markdown("---")
 
 # ==========================================
-# CONSULTA PAGINADA DA TABELA
+# CONSULTA PAGINADA COM O LIMITE SELECIONADO
 # ==========================================
 query_dados = f"""
     SELECT 
@@ -401,7 +398,6 @@ with col_t1:
     st.subheader(f"📋 Relação de Empresas ({total_cnpjs:,} localizadas)")
 
 with col_t2:
-    # Botão para exportação em CSV (semelhante ao Exportar da imagem)
     if not df_tabela.empty:
         csv_data = df_tabela.to_csv(index=False).encode('utf-8-sig')
         st.download_button(
@@ -415,7 +411,6 @@ with col_t2:
 if df_tabela.empty:
     st.info("Nenhuma empresa encontrada com os parâmetros informados.")
 else:
-    # Abertura de tratamento por linha
     col_act1, col_act2 = st.columns([3, 1])
     with col_act1:
         empresa_para_tratar = st.selectbox(
@@ -458,4 +453,4 @@ else:
     )
 
     total_paginas = (total_cnpjs // registros_por_pagina) + (1 if total_cnpjs % registros_por_pagina > 0 else 0)
-    st.caption(f"Página {pagina_atual} de {total_paginas} • Exibindo {len(df_tabela)} registros nesta página.")
+    st.caption(f"Página {pagina_atual} de {total_paginas} • Exibindo {len(df_tabela)} de até {registros_por_pagina} linhas por página (Total: {total_cnpjs:,} empresas).")
