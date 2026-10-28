@@ -3,16 +3,16 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 
 # ==========================================
-# CONFIGURAÇÃO DA PÁGINA STREAMLIT
+# CONFIGURAÇÃO GERAL DA PÁGINA
 # ==========================================
 st.set_page_config(
-    page_title="Gestão e Prospecção de CNPJs",
-    page_icon="📊",
+    page_title="Painel Corporativo - Gestão de CNPJs",
+    page_icon="🏢",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# URI de Conexão com o NeonDB (Utilizando o driver psycopg2)
+# Conexão com o banco NeonDB
 POSTGRES_URI = "postgresql+psycopg2://neondb_owner:npg_bNDxjo9L2giC@ep-empty-hall-b4zx7bew-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
 @st.cache_resource
@@ -25,36 +25,83 @@ except Exception as e:
     st.error(f"Erro ao conectar ao banco de dados: {e}")
     st.stop()
 
-# Estilização dos Cards do Dashboard
+# ==========================================
+# ESTILIZAÇÃO CSS CUSTOMIZADA (LAYOUT DA IMAGEM)
+# ==========================================
 st.markdown("""
     <style>
+    /* Oculta topo padrão do Streamlit */
+    header {visibility: hidden;}
+    .block-container {
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    /* Barra Superior Corporativa */
+    .top-header {
+        background: linear-gradient(90deg, #4A154B 0%, #300A32 100%);
+        padding: 14px 24px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: white;
+        margin-bottom: 20px;
+    }
+    .top-title {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .badge-user {
+        background-color: #ffffff;
+        color: #4A154B;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+
+    /* Painel de Filtros e Cards */
+    .filter-box {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    /* Cards de Indicadores */
     .metric-card {
         background-color: #ffffff;
-        border-radius: 12px;
-        padding: 16px 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-radius: 10px;
+        padding: 14px 18px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
         border-top: 4px solid #6c757d;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
-    .card-total { border-top-color: #2b3a4a; }
+    .card-total { border-top-color: #4A154B; }
     .card-pendente { border-top-color: #d9534f; }
     .card-negado { border-top-color: #c9302c; }
     .card-agendado { border-top-color: #337ab7; }
     .card-tratado { border-top-color: #1a8a59; }
-    
+
     .card-title {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
-        color: #4a5568;
+        color: #64748b;
         text-transform: uppercase;
-        margin-bottom: 4px;
     }
     .card-value {
-        font-size: 32px;
+        font-size: 26px;
         font-weight: 800;
-        margin-bottom: 2px;
+        margin: 4px 0;
     }
-    .val-total { color: #1a202c; }
+    .val-total { color: #4A154B; }
     .val-pendente { color: #d9534f; }
     .val-negado { color: #c9302c; }
     .val-agendado { color: #337ab7; }
@@ -62,69 +109,142 @@ st.markdown("""
 
     .card-sub {
         font-size: 11px;
-        color: #718096;
+        color: #94a3b8;
     }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("📊 Painel de Prospecção e Controle de Carteira")
+# ==========================================
+# TOPO CORPORATIVO
+# ==========================================
+st.markdown("""
+    <div class="top-header">
+        <div class="top-title">
+            <span>🏛️ PROSPECÇÃO DE CNPJs</span>
+            <span style="font-size: 15px; font-weight: 400; opacity: 0.85;">| Base Operacional</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <span class="badge-user">Editor</span>
+            <span style="font-size: 13px; opacity: 0.9;">Equipe SP</span>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 # ==========================================
-# PAINEL LATERAL DE FILTROS
+# MENU LATERAL
 # ==========================================
-st.sidebar.header("🔍 Filtros de Seleção")
+with st.sidebar:
+    st.markdown("### 📑 Menu")
+    opcao_menu = st.radio(
+        "Navegação:",
+        ["📊 Relatórios e Carteira", "📋 Orientações e Regras", "⚙️ Configurações"],
+        label_visibility="collapsed"
+    )
+    st.markdown("---")
+    st.caption("Sistema de Tratamento e CRM v2.0")
 
-busca_responsavel = st.sidebar.text_input("👤 Responsável pelo Tratamento:", "").strip()
+if opcao_menu != "📊 Relatórios e Carteira":
+    st.info("Seção em desenvolvimento. Acesse a aba 'Relatórios e Carteira'.")
+    st.stop()
 
-lista_status = ["Pendente", "Negado Operacao", "Agendado", "Tratado", "Sem Interesse", "Em Contato"]
-filtro_status = st.sidebar.multiselect("📌 Status do Follow-up:", options=lista_status, default=[])
+# ==========================================
+# SEÇÃO: CONSULTAS FREQUENTES (BOTÕES RÁPIDOS)
+# ==========================================
+st.markdown("##### ⚡ CONSULTAS FREQUENTES")
+col_b1, col_b2, col_b3, col_b4, col_b5, col_b6 = st.columns(6)
 
-busca_bairro = st.sidebar.text_input("🏘️ Bairro (ou parte dele):", "").strip().upper()
-busca_cep = st.sidebar.text_input("📮 CEP (ou parte dele):", "").strip()
+if "quick_filter" not in st.session_state:
+    st.session_state["quick_filter"] = "Todos"
 
-lista_portes = ["Micro Empresa (ME)", "Empresa de Pequeno Porte (EPP)", "Demais (Médio/Grande Porte)", "Não Informado"]
-filtro_porte = st.sidebar.multiselect("🏢 Porte da Empresa:", options=lista_portes, default=[])
+with col_b1:
+    if st.button("Ver Todos", use_container_width=True):
+        st.session_state["quick_filter"] = "Todos"
+with col_b2:
+    if st.button("Apenas Pendentes", use_container_width=True):
+        st.session_state["quick_filter"] = "Pendente"
+with col_b3:
+    if st.button("Negado Operação", use_container_width=True):
+        st.session_state["quick_filter"] = "Negado Operacao"
+with col_b4:
+    if st.button("Agendados", use_container_width=True):
+        st.session_state["quick_filter"] = "Agendado"
+with col_b5:
+    if st.button("Tratados", use_container_width=True):
+        st.session_state["quick_filter"] = "Tratado"
+with col_b6:
+    if st.button("Sem Responsável", use_container_width=True):
+        st.session_state["quick_filter"] = "SemResp"
 
-busca_texto = st.sidebar.text_input("🔍 Buscar por Razão Social ou CNPJ:", "").strip().upper()
+# ==========================================
+# GRID DE FILTROS NA PÁGINA PRINCIPAL
+# ==========================================
+with st.expander("🔍 FILTROS E PARÂMETROS DE BUSCA", expanded=True):
+    col_f1, col_f2, col_f3, col_f4 = st.columns(4)
+    
+    with col_f1:
+        lista_status = ["Todos", "Pendente", "Negado Operacao", "Agendado", "Tratado", "Sem Interesse", "Em Contato"]
+        def_status_idx = 0
+        if st.session_state["quick_filter"] in lista_status:
+            def_status_idx = lista_status.index(st.session_state["quick_filter"])
+        filtro_status_sel = st.selectbox("Status de Follow-up:", lista_status, index=def_status_idx)
 
-# Controles de Paginação
+    with col_f2:
+        busca_responsavel = st.text_input("Responsável pelo Tratamento:", value="Sem Responsável" if st.session_state["quick_filter"] == "SemResp" else "")
+
+    with col_f3:
+        lista_portes = ["Todos", "Micro Empresa (ME)", "Empresa de Pequeno Porte (EPP)", "Demais (Médio/Grande Porte)", "Não Informado"]
+        filtro_porte_sel = st.selectbox("Porte da Empresa:", lista_portes, index=0)
+
+    with col_f4:
+        busca_cep = st.text_input("CEP (ou parte dele):", "")
+
+    col_f5, col_f6, col_f7 = st.columns([2, 2, 1])
+    with col_f5:
+        busca_bairro = st.text_input("Bairro:", "")
+    with col_f6:
+        busca_texto = st.text_input("Razão Social ou CNPJ:", "")
+    with col_f7:
+        pagina_atual = st.number_input("Página:", min_value=1, value=1, step=1)
+
 registros_por_pagina = 100
-pagina_atual = st.sidebar.number_input("📄 Página:", min_value=1, value=1, step=1)
 offset_val = (pagina_atual - 1) * registros_por_pagina
 
 # ==========================================
-# CONSTRUÇÃO DA CONSULTA SQL DINÂMICA
+# QUERY DINÂMICA SQL NO BANCO DE DADOS
 # ==========================================
 where_clauses = ["1=1"]
 params = {}
 
-if busca_responsavel:
-    where_clauses.append("responsavel_tratamento ILIKE :resp")
-    params["resp"] = f"%{busca_responsavel}%"
+if filtro_status_sel != "Todos":
+    where_clauses.append("status_followup = :stat")
+    params["stat"] = filtro_status_sel
 
-if filtro_status:
-    where_clauses.append("status_followup IN :status_list")
-    params["status_list"] = tuple(filtro_status)
+if busca_responsavel.strip():
+    if busca_responsavel.strip().lower() in ["sem responsável", "sem responsavel", "vazio"]:
+        where_clauses.append("(responsavel_tratamento IS NULL OR responsavel_tratamento = '')")
+    else:
+        where_clauses.append("responsavel_tratamento ILIKE :resp")
+        params["resp"] = f"%{busca_responsavel.strip()}%"
 
-if busca_bairro:
-    where_clauses.append("bairro ILIKE :bairro")
-    params["bairro"] = f"%{busca_bairro}%"
+if filtro_porte_sel != "Todos":
+    where_clauses.append("porte_empresa = :porte")
+    params["porte"] = filtro_porte_sel
 
-if busca_cep:
+if busca_cep.strip():
     where_clauses.append("cep LIKE :cep")
-    params["cep"] = f"%{busca_cep}%"
+    params["cep"] = f"%{busca_cep.strip()}%"
 
-if filtro_porte:
-    where_clauses.append("porte_empresa IN :portes")
-    params["portes"] = tuple(filtro_porte)
+if busca_bairro.strip():
+    where_clauses.append("bairro ILIKE :bairro")
+    params["bairro"] = f"%{busca_bairro.strip()}%"
 
-if busca_texto:
-    where_clauses.append("(razao_social ILIKE :texto OR cnpj_formatado LIKE :texto)")
-    params["texto"] = f"%{busca_texto}%"
+if busca_texto.strip():
+    where_clauses.append("(razao_social ILIKE :txt OR cnpj_formatado LIKE :txt)")
+    params["txt"] = f"%{busca_texto.strip()}%"
 
 sql_where = " WHERE " + " AND ".join(where_clauses)
 
-# Executa consulta leve de KPIs
+# Consulta agregada de KPIs
 query_kpis = f"""
     SELECT 
         COUNT(*) AS total,
@@ -135,12 +255,8 @@ query_kpis = f"""
     FROM empresas {sql_where}
 """
 
-try:
-    with engine.connect() as conn:
-        kpi_res = conn.execute(text(query_kpis), params).fetchone()
-except Exception as e:
-    st.error(f"Erro ao consultar indicadores no banco: {e}")
-    st.stop()
+with engine.connect() as conn:
+    kpi_res = conn.execute(text(query_kpis), params).fetchone()
 
 total_cnpjs = kpi_res.total or 0
 qtd_pendentes = kpi_res.pendentes or 0
@@ -154,22 +270,20 @@ pct_agendado = (qtd_agendados / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
 pct_tratado = (qtd_tratados / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
 
 # ==========================================
-# DASHBOARD DE INDICADORES
+# CARDS DE INDICADORES (CONFORME SOLICITADO)
 # ==========================================
-st.markdown("##### Indicadores dos filtros • Categorias separadas por equipe e Status")
+col_c1, col_c2, col_c3, col_c4, col_c5 = st.columns(5)
 
-col1, col2, col3, col4, col5 = st.columns(5)
-
-with col1:
+with col_c1:
     st.markdown(f"""
         <div class="metric-card card-total">
             <div class="card-title">Total de CNPJs</div>
             <div class="card-value val-total">{total_cnpjs:,}</div>
-            <div class="card-sub">Registros distintos</div>
+            <div class="card-sub">Registros filtrados</div>
         </div>
     """, unsafe_allow_html=True)
 
-with col2:
+with col_c2:
     st.markdown(f"""
         <div class="metric-card card-pendente">
             <div class="card-title">Pendentes</div>
@@ -178,7 +292,7 @@ with col2:
         </div>
     """, unsafe_allow_html=True)
 
-with col3:
+with col_c3:
     st.markdown(f"""
         <div class="metric-card card-negado">
             <div class="card-title">Negado Operação</div>
@@ -187,7 +301,7 @@ with col3:
         </div>
     """, unsafe_allow_html=True)
 
-with col4:
+with col_c4:
     st.markdown(f"""
         <div class="metric-card card-agendado">
             <div class="card-title">Agendados</div>
@@ -196,7 +310,7 @@ with col4:
         </div>
     """, unsafe_allow_html=True)
 
-with col5:
+with col_c5:
     st.markdown(f"""
         <div class="metric-card card-tratado">
             <div class="card-title">Tratados</div>
@@ -208,7 +322,7 @@ with col5:
 st.markdown("---")
 
 # ==========================================
-# CONSULTA PAGINADA
+# CONSULTA PAGINADA DA TABELA
 # ==========================================
 query_dados = f"""
     SELECT 
@@ -222,13 +336,9 @@ query_dados = f"""
     LIMIT {registros_por_pagina} OFFSET {offset_val}
 """
 
-try:
-    df_tabela = pd.read_sql(text(query_dados), engine, params=params)
-except Exception as e:
-    st.error(f"Erro ao carregar dados da tabela: {e}")
-    st.stop()
+df_tabela = pd.read_sql(text(query_dados), engine, params=params)
 
-# Formatação de telefone
+# Formata telefone completo com DDD
 df_tabela['ddd1'] = df_tabela['ddd1'].astype(str).str.strip().str.replace('.0', '', regex=False)
 df_tabela['telefone1'] = df_tabela['telefone1'].astype(str).str.strip().str.replace('.0', '', regex=False)
 
@@ -262,8 +372,9 @@ def abrir_modal_tratamento(cnpj):
     with st.form("form_tratamento_modal"):
         resp_atual = st.text_input("👤 Responsável pelo Tratamento:", value=row.get('responsavel_tratamento', '') or '')
         
-        idx_status = lista_status.index(row['status_followup']) if row['status_followup'] in lista_status else 0
-        status_novo = st.selectbox("📌 Status do Follow-up:", options=lista_status, index=idx_status)
+        status_opcoes = ["Pendente", "Negado Operacao", "Agendado", "Tratado", "Sem Interesse", "Em Contato"]
+        idx_status = status_opcoes.index(row['status_followup']) if row['status_followup'] in status_opcoes else 0
+        status_novo = st.selectbox("📌 Status do Follow-up:", options=status_opcoes, index=idx_status)
         
         obs_nova = st.text_area("💬 Observações do Atendimento:", value=row.get('observacoes', '') or '', height=120)
         
@@ -282,27 +393,41 @@ def abrir_modal_tratamento(cnpj):
             st.rerun()
 
 # ==========================================
-# TABELA PRINCIPAL COM BOTÃO DE ABRIR MODAL
+# SEÇÃO DA TABELA E ABERTURA DE MODAL
 # ==========================================
-st.subheader("📋 Relação de Empresas Filtradas")
+col_t1, col_t2 = st.columns([3, 1])
 
-if df_tabela.empty:
-    st.info("Nenhuma empresa encontrada com os filtros selecionados.")
-else:
-    col_sel1, col_sel2 = st.columns([3, 1])
+with col_t1:
+    st.subheader(f"📋 Relação de Empresas ({total_cnpjs:,} localizadas)")
 
-    with col_sel1:
-        empresa_para_tratar = st.selectbox(
-            "⚡ Clique para selecionar a empresa que deseja tratar:",
-            options=["-- Selecione uma empresa para tratar --"] + df_tabela['cnpj_formatado'].tolist(),
-            format_func=lambda x: f"{x} - {df_tabela[df_tabela['cnpj_formatado']==x]['razao_social'].values[0]}" if x != "-- Selecione uma empresa para tratar --" else x
+with col_t2:
+    # Botão para exportação em CSV (semelhante ao Exportar da imagem)
+    if not df_tabela.empty:
+        csv_data = df_tabela.to_csv(index=False).encode('utf-8-sig')
+        st.download_button(
+            label="📥 Exportar Dados (CSV)",
+            data=csv_data,
+            file_name="empresas_filtradas.csv",
+            mime="text/csv",
+            use_container_width=True
         )
 
-    with col_sel2:
+if df_tabela.empty:
+    st.info("Nenhuma empresa encontrada com os parâmetros informados.")
+else:
+    # Abertura de tratamento por linha
+    col_act1, col_act2 = st.columns([3, 1])
+    with col_act1:
+        empresa_para_tratar = st.selectbox(
+            "⚡ Selecione a empresa que deseja tratar:",
+            options=["-- Selecione uma empresa --"] + df_tabela['cnpj_formatado'].tolist(),
+            format_func=lambda x: f"{x} - {df_tabela[df_tabela['cnpj_formatado']==x]['razao_social'].values[0]}" if x != "-- Selecione uma empresa --" else x
+        )
+    with col_act2:
         st.write(" ")
         st.write(" ")
-        if empresa_para_tratar != "-- Selecione uma empresa para tratar --":
-            if st.button("✏️ Abrir Janela de Tratamento", use_container_width=True):
+        if empresa_para_tratar != "-- Selecione uma empresa --":
+            if st.button("✏️ Abrir Tratamento", use_container_width=True):
                 abrir_modal_tratamento(empresa_para_tratar)
 
     colunas_exibicao = [
@@ -333,4 +458,4 @@ else:
     )
 
     total_paginas = (total_cnpjs // registros_por_pagina) + (1 if total_cnpjs % registros_por_pagina > 0 else 0)
-    st.caption(f"Exibindo página {pagina_atual} de {total_paginas} (Mostrando {len(df_tabela)} registros nesta página de um total de {total_cnpjs:,} encontrados no banco).")
+    st.caption(f"Página {pagina_atual} de {total_paginas} • Exibindo {len(df_tabela)} registros nesta página.")
