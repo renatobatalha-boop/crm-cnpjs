@@ -34,19 +34,18 @@ def fmt_num(val):
     return f"{int(val):,}".replace(",", ".")
 
 # ==========================================
-# TEMA DARK NEON ROXO COMPLETO (INCLUINDO TABELA)
+# ESTILIZAÇÃO CSS - DESIGN LEVE & CLEAN (SAAS)
 # ==========================================
 st.markdown("""
     <style>
-    /* Ocultar barra superior padrão do Streamlit */
     header {visibility: hidden;}
     [data-testid="collapsedControl"] {display: none;}
     
-    /* Fundo da aplicação */
+    /* Fundo da tela suave */
     .stApp {
-        background-color: #120722 !important;
-        color: #f1f5f9 !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: #F8FAFC !important;
+        color: #0F172A !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
     }
     
     .block-container {
@@ -55,201 +54,183 @@ st.markdown("""
         max-width: 98%;
     }
 
-    /* Topo com gradiente escuro */
-    .neon-top-bar {
-        background: linear-gradient(135deg, #270d47 0%, #150929 100%);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 18px 24px;
+    /* Topo Corporativo Minimalista */
+    .clean-top-bar {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 16px 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin-bottom: 20px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
-    .neon-top-title {
-        font-size: 22px;
-        font-weight: 800;
-        letter-spacing: 0.8px;
-        color: #ffffff;
-        text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .neon-badge-live {
-        background-color: rgba(34, 197, 94, 0.15);
-        color: #4ade80;
-        border: 1px solid rgba(74, 222, 128, 0.3);
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 13px;
+    .clean-title {
+        font-size: 20px;
         font-weight: 700;
+        letter-spacing: -0.3px;
+        color: #0F172A;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+    }
+    .clean-subtitle {
+        font-size: 14px;
+        color: #64748B;
+        font-weight: 400;
+    }
+    .clean-badge-live {
+        background-color: #ECFDF5;
+        color: #059669;
+        border: 1px solid #A7F3D0;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
     .live-dot {
-        width: 8px;
-        height: 8px;
-        background-color: #4ade80;
+        width: 7px;
+        height: 7px;
+        background-color: #10B981;
         border-radius: 50%;
-        box-shadow: 0 0 10px #4ade80;
     }
 
-    /* Cards de Indicadores */
-    .kpi-card {
-        border-radius: 14px;
-        padding: 16px 18px;
-        min-height: 120px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Cards de Indicadores Clean */
+    .card-kpi {
+        background-color: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        min-height: 105px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border-top: 3px solid #CBD5E1;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
-    .kpi-card:hover {
+    .card-kpi:hover {
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
 
-    .kpi-total {
-        background: linear-gradient(135deg, #a855f7 0%, #6b21a8 100%);
-        color: #ffffff;
-    }
-    .kpi-nao-contatado {
-        background: linear-gradient(135deg, #2b134d 0%, #1c0c33 100%);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        color: #cbd5e1;
-    }
-    .kpi-contatado {
-        background: linear-gradient(135deg, #0284c7 0%, #034870 100%);
-        color: #ffffff;
-    }
-    .kpi-futuro {
-        background: linear-gradient(135deg, #ca8a04 0%, #713f12 100%);
-        color: #ffffff;
-    }
-    .kpi-convertido {
-        background: linear-gradient(135deg, #15803d 0%, #064e3b 100%);
-        border: 1px solid rgba(74, 222, 128, 0.3);
-        color: #ffffff;
-    }
-    .kpi-ativo {
-        background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
-        color: #ffffff;
-    }
-    .kpi-negado {
-        background: linear-gradient(135deg, #be123c 0%, #881337 100%);
-        color: #ffffff;
-    }
+    /* Cores das bordas superiores dos cards */
+    .border-total { border-top-color: #4F46E5; }
+    .border-nao-contatado { border-top-color: #94A3B8; }
+    .border-contatado { border-top-color: #0284C7; }
+    .border-futuro { border-top-color: #F59E0B; }
+    .border-convertido { border-top-color: #10B981; }
+    .border-ativo { border-top-color: #0D9488; }
+    .border-negado { border-top-color: #EF4444; }
 
     .kpi-title {
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.6px;
-        opacity: 0.85;
+        letter-spacing: 0.5px;
+        color: #64748B;
     }
     .kpi-value {
-        font-size: 26px;
-        font-weight: 900;
+        font-size: 24px;
+        font-weight: 800;
         letter-spacing: -0.5px;
         line-height: 1.1;
-        margin: 6px 0;
+        margin: 4px 0;
+        color: #0F172A;
     }
     .kpi-sub {
-        font-size: 12px;
-        opacity: 0.75;
+        font-size: 11px;
+        font-weight: 500;
+        color: #94A3B8;
     }
 
-    /* Faixa de Resumo */
-    .neon-summary-bar {
-        background: #1c0e35;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-left: 4px solid #a855f7;
-        padding: 14px 20px;
-        border-radius: 10px;
-        margin: 18px 0;
-        font-size: 14px;
-        color: #e2e8f0;
+    /* Resumo Textual Suave */
+    .summary-bar-clean {
+        background-color: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        border-left: 4px solid #3B82F6;
+        padding: 12px 18px;
+        border-radius: 8px;
+        margin: 16px 0;
+        font-size: 13px;
+        color: #1E3A8A;
+        line-height: 1.5;
     }
 
-    /* Container de Expander dos Filtros */
+    /* Expander de Filtros */
     div[data-testid="stExpander"] {
-        background-color: #1a0b30 !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
         border-radius: 12px !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
     }
     div[data-testid="stExpander"] summary {
-        background-color: #1a0b30 !important;
-        color: #f8fafc !important;
+        background-color: #FFFFFF !important;
+        color: #1E293B !important;
         font-weight: 700 !important;
         border-radius: 12px !important;
     }
 
-    /* Inputs e Caixas de Seleção */
+    /* Inputs e Controles */
     .stTextInput input, .stSelectbox [data-baseweb="select"], .stNumberInput input {
-        background-color: #240e42 !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        background-color: #F8FAFC !important;
+        color: #0F172A !important;
+        border: 1px solid #CBD5E1 !important;
         border-radius: 8px !important;
     }
     .stTextInput label, .stSelectbox label, .stNumberInput label {
-        color: #cbd5e1 !important;
+        color: #475569 !important;
         font-weight: 600 !important;
         font-size: 12px !important;
-    }
-    
-    /* Customização do Dataframe / Tabela Escura */
-    [data-testid="stDataFrame"] {
-        background-color: #190a2e !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-        padding: 6px !important;
-    }
-    [data-testid="stDataFrame"] canvas {
-        filter: invert(0.92) hue-rotate(180deg) !important;
-        border-radius: 8px !important;
-    }
-    [data-testid="stDataFrame"] div {
-        color: #ffffff !important;
     }
 
     /* Botões */
     .stButton button {
-        background: linear-gradient(90deg, #9333ea 0%, #7e22ce 100%) !important;
-        color: white !important;
+        background-color: #4F46E5 !important;
+        color: #FFFFFF !important;
         border: none !important;
         border-radius: 8px !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
         padding: 8px 16px !important;
-        box-shadow: 0 4px 14px rgba(147, 51, 234, 0.4) !important;
+        box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3) !important;
     }
     .stButton button:hover {
-        background: linear-gradient(90deg, #a855f7 0%, #9333ea 100%) !important;
-        transform: translateY(-1px);
+        background-color: #4338CA !important;
+    }
+    
+    /* Container do Dataframe */
+    [data-testid="stDataFrame"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+        padding: 6px !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# HEADER PRINCIPAL
+# TOPO CORPORATIVO
 # ==========================================
 st.markdown("""
-    <div class="neon-top-bar">
-        <div class="neon-top-title">
-            <span>PAINEL DE PROSPECÇÃO DE CNPJS</span>
+    <div class="clean-top-bar">
+        <div class="clean-title">
+            <span>🏢 Prospecção e Carteira de CNPJs</span>
+            <span class="clean-subtitle">| Base Operacional</span>
         </div>
-        <div class="neon-badge-live">
+        <div class="clean-badge-live">
             <span class="live-dot"></span>
-            <span>Operação Ativa</span>
+            <span>Painel Ativo</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# STATUS OFICIAIS
+# LISTA OFICIAL DE STATUS
 # ==========================================
 STATUS_OFICIAIS = [
     "Lead Não Contatado",
@@ -371,13 +352,13 @@ qtd_negados = kpi_res.negados or 0
 pct = lambda val: (val / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
 
 # ==========================================
-# CARDS DE INDICADORES (GRADIENTE NEON)
+# CARDS DE INDICADORES (CLEAN SAAS)
 # ==========================================
 c_t, c_nc, c_c, c_cf, c_conv, c_pa, c_pn = st.columns(7)
 
 with c_t:
     st.markdown(f"""
-        <div class="kpi-card kpi-total">
+        <div class="card-kpi border-total">
             <div class="kpi-title">Total Base</div>
             <div class="kpi-value">{fmt_num(total_cnpjs)}</div>
             <div class="kpi-sub">CNPJs Filtrados</div>
@@ -386,7 +367,7 @@ with c_t:
 
 with c_nc:
     st.markdown(f"""
-        <div class="kpi-card kpi-nao-contatado">
+        <div class="card-kpi border-nao-contatado">
             <div class="kpi-title">Não Contatados</div>
             <div class="kpi-value">{fmt_num(qtd_nao_contatados)}</div>
             <div class="kpi-sub">{pct(qtd_nao_contatados):.1f}% da base</div>
@@ -395,7 +376,7 @@ with c_nc:
 
 with c_c:
     st.markdown(f"""
-        <div class="kpi-card kpi-contatado">
+        <div class="card-kpi border-contatado">
             <div class="kpi-title">Contatados</div>
             <div class="kpi-value">{fmt_num(qtd_contatados)}</div>
             <div class="kpi-sub">{pct(qtd_contatados):.1f}% da base</div>
@@ -404,7 +385,7 @@ with c_c:
 
 with c_cf:
     st.markdown(f"""
-        <div class="kpi-card kpi-futuro">
+        <div class="card-kpi border-futuro">
             <div class="kpi-title">Contato Futuro</div>
             <div class="kpi-value">{fmt_num(qtd_futuros)}</div>
             <div class="kpi-sub">{pct(qtd_futuros):.1f}% da base</div>
@@ -413,37 +394,37 @@ with c_cf:
 
 with c_conv:
     st.markdown(f"""
-        <div class="kpi-card kpi-convertido">
+        <div class="card-kpi border-convertido">
             <div class="kpi-title">Convertidos</div>
-            <div class="kpi-value">{fmt_num(qtd_convertidos)}</div>
+            <div class="kpi-value" style="color: #059669;">{fmt_num(qtd_convertidos)}</div>
             <div class="kpi-sub">{pct(qtd_convertidos):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
 
 with c_pa:
     st.markdown(f"""
-        <div class="kpi-card kpi-ativo">
+        <div class="card-kpi border-ativo">
             <div class="kpi-title">Parceiro Ativo</div>
-            <div class="kpi-value">{fmt_num(qtd_ativos)}</div>
+            <div class="kpi-value" style="color: #0D9488;">{fmt_num(qtd_ativos)}</div>
             <div class="kpi-sub">{pct(qtd_ativos):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
 
 with c_pn:
     st.markdown(f"""
-        <div class="kpi-card kpi-negado">
+        <div class="card-kpi border-negado">
             <div class="kpi-title">Proposta Negada</div>
-            <div class="kpi-value">{fmt_num(qtd_negados)}</div>
+            <div class="kpi-value" style="color: #DC2626;">{fmt_num(qtd_negados)}</div>
             <div class="kpi-sub">{pct(qtd_negados):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
 
-# Faixa de resumo textual
+# Barra de Resumo Informativa
 st.markdown(f"""
-    <div class="neon-summary-bar">
-        Dos <b>{fmt_num(total_cnpjs)}</b> CNPJs filtrados, <b>{fmt_num(qtd_nao_contatados)}</b> ainda aguardam primeiro contato.
-        Já foram abordados <b>{fmt_num(qtd_contatados + qtd_futuros + qtd_convertidos + qtd_ativos + qtd_negados)}</b> leads,
-        resultando em <b>{fmt_num(qtd_convertidos)}</b> conversões diretas e <b>{fmt_num(qtd_ativos)}</b> parceiros ativos na base.
+    <div class="summary-bar-clean">
+        💡 Dos <b>{fmt_num(total_cnpjs)}</b> CNPJs filtrados, <b>{fmt_num(qtd_nao_contatados)}</b> ainda aguardam primeira abordagem. 
+        A equipe já trabalhou <b>{fmt_num(qtd_contatados + qtd_futuros + qtd_convertidos + qtd_ativos + qtd_negados)}</b> empresas, 
+        com <b>{fmt_num(qtd_convertidos)}</b> conversões e <b>{fmt_num(qtd_ativos)}</b> parceiros ativos registrados.
     </div>
 """, unsafe_allow_html=True)
 
@@ -476,12 +457,12 @@ def formatar_telefone(row):
         return f"({ddd}) {tel}"
     elif tel and tel not in ['nan', 'None']:
         return tel
-    return "Não informado"
+    return "-"
 
 if not df_tabela.empty:
     df_tabela['telefone_completo'] = df_tabela.apply(formatar_telefone, axis=1)
     df_tabela['correio_eletronico'] = df_tabela['correio_eletronico'].apply(
-        lambda x: x if x and str(x).strip() not in ['nan', 'None', ''] else "Não informado"
+        lambda x: x if x and str(x).strip() not in ['nan', 'None', ''] else "-"
     )
 else:
     df_tabela['telefone_completo'] = []
@@ -506,12 +487,13 @@ def abrir_modal_tratamento(cnpj):
     email_fmt = row.get('correio_eletronico') or "Não informado"
     nome_exibicao = row.get('nome_fantasia') if row.get('nome_fantasia') and str(row.get('nome_fantasia')).strip() not in ['nan', 'None', ''] else row.get('razao_social')
 
+    # Card interno do modal limpo e legível
     st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #1f0b3b 0%, #130726 100%); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 16px; margin-bottom: 15px; color: #f1f5f9;">
-            <div style="font-size: 17px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">🏢 {nome_exibicao}</div>
-            <div style="font-size: 13px; color: #cbd5e1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+            <div style="font-size: 17px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">🏢 {nome_exibicao}</div>
+            <div style="font-size: 13px; color: #475569; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                 <div><b>Razão Social:</b> {row.get('razao_social', '-')}</div>
-                <div><b>CNPJ:</b> <code style="background-color: #2e1055; color: #38bdf8; padding: 2px 6px; border-radius: 4px;">{row.get('cnpj_formatado', '-')}</code></div>
+                <div><b>CNPJ:</b> <code style="background-color: #E2E8F0; color: #0F172A; padding: 2px 6px; border-radius: 4px;">{row.get('cnpj_formatado', '-')}</code></div>
                 <div><b>Porte:</b> {row.get('porte_empresa', 'Não Informado')}</div>
                 <div><b>Telefone:</b> {tel_fmt}</div>
                 <div style="grid-column: span 2;"><b>E-mail:</b> {email_fmt}</div>
@@ -600,7 +582,7 @@ def abrir_modal_tratamento(cnpj):
                 st.error(f"Erro ao salvar: {err}")
 
 # ==========================================
-# RELAÇÃO DE EMPRESAS (TABELA ESCURA)
+# RELAÇÃO DE EMPRESAS
 # ==========================================
 st.markdown(f"#### 📋 Relação de Empresas ({fmt_num(total_cnpjs)} CNPJs localizados)")
 
@@ -613,9 +595,8 @@ else:
         'correio_eletronico', 'bairro', 'cep', 'observacoes'
     ]
 
-    st.caption("👉 **Dica:** Clique em qualquer linha para abrir a janela de tratamento do Lead.")
+    st.caption("👉 **Clique em qualquer linha** para abrir a janela de tratamento do Lead.")
 
-    # Dataframe escuro com seleção de linha
     event = st.dataframe(
         df_tabela[colunas_exibicao],
         column_config={
