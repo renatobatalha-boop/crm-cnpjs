@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, text
 # CONFIGURAÇÃO GERAL DA PÁGINA
 # ==========================================
 st.set_page_config(
-    page_title="Painel Corporativo - Gestão de CNPJs",
+    page_title="Painel Corporativo - Gestão de CNPJs | CIEE",
     page_icon="🏢",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -34,18 +34,20 @@ def fmt_num(val):
     return f"{int(val):,}".replace(",", ".")
 
 # ==========================================
-# ESTILIZAÇÃO CSS - DESIGN LEVE & CLEAN (SAAS)
+# IDENTIDADE VISUAL INSTITUCIONAL CIEE
+# Cores: Laranja (#FF5F00), Azul (#005CB9),
+# Roxo Real (#31006F), Roxo Provence (#722282)
 # ==========================================
 st.markdown("""
     <style>
     header {visibility: hidden;}
     [data-testid="collapsedControl"] {display: none;}
     
-    /* Fundo da tela suave */
+    /* Fundo da tela suave e ergonômico */
     .stApp {
-        background-color: #F8FAFC !important;
-        color: #0F172A !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+        background-color: #F4F6FB !important;
+        color: #1E293B !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
     .block-container {
@@ -54,78 +56,73 @@ st.markdown("""
         max-width: 98%;
     }
 
-    /* Topo Corporativo Minimalista */
-    .clean-top-bar {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
+    /* Topo com Gradiente Roxo Real / Provence CIEE */
+    .ciee-top-bar {
+        background: linear-gradient(90deg, #31006F 0%, #722282 60%, #005CB9 100%);
         border-radius: 12px;
         padding: 16px 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        margin-bottom: 18px;
+        box-shadow: 0 4px 14px rgba(49, 0, 111, 0.18);
+        color: #ffffff;
     }
-    .clean-title {
+    .ciee-title {
         font-size: 20px;
-        font-weight: 700;
-        letter-spacing: -0.3px;
-        color: #0F172A;
+        font-weight: 800;
+        letter-spacing: -0.2px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
     }
-    .clean-subtitle {
-        font-size: 14px;
-        color: #64748B;
-        font-weight: 400;
-    }
-    .clean-badge-live {
-        background-color: #ECFDF5;
-        color: #059669;
-        border: 1px solid #A7F3D0;
-        padding: 5px 12px;
+    .ciee-badge-live {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        padding: 5px 14px;
         border-radius: 20px;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 700;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
     }
     .live-dot {
-        width: 7px;
-        height: 7px;
-        background-color: #10B981;
+        width: 8px;
+        height: 8px;
+        background-color: #FF5F00;
         border-radius: 50%;
+        box-shadow: 0 0 8px #FF5F00;
     }
 
-    /* Cards de Indicadores Clean */
+    /* Cards de Indicadores com Acentos CIEE */
     .card-kpi {
         background-color: #FFFFFF;
         border: 1px solid #E2E8F0;
         border-radius: 12px;
         padding: 14px 16px;
         min-height: 105px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        border-top: 3px solid #CBD5E1;
+        border-top: 4px solid #CBD5E1;
         transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     .card-kpi:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
     }
 
-    /* Cores das bordas superiores dos cards */
-    .border-total { border-top-color: #4F46E5; }
+    /* Cores personalizadas nas bordas dos cards */
+    .border-total { border-top-color: #31006F; }
     .border-nao-contatado { border-top-color: #94A3B8; }
-    .border-contatado { border-top-color: #0284C7; }
-    .border-futuro { border-top-color: #F59E0B; }
-    .border-convertido { border-top-color: #10B981; }
-    .border-ativo { border-top-color: #0D9488; }
-    .border-negado { border-top-color: #EF4444; }
+    .border-contatado { border-top-color: #005CB9; }
+    .border-futuro { border-top-color: #722282; }
+    .border-convertido { border-top-color: #FF5F00; }
+    .border-ativo { border-top-color: #059669; }
+    .border-negado { border-top-color: #DC2626; }
 
     .kpi-title {
         font-size: 11px;
@@ -136,11 +133,11 @@ st.markdown("""
     }
     .kpi-value {
         font-size: 24px;
-        font-weight: 800;
+        font-weight: 900;
         letter-spacing: -0.5px;
         line-height: 1.1;
         margin: 4px 0;
-        color: #0F172A;
+        color: #1E293B;
     }
     .kpi-sub {
         font-size: 11px;
@@ -148,29 +145,29 @@ st.markdown("""
         color: #94A3B8;
     }
 
-    /* Resumo Textual Suave */
-    .summary-bar-clean {
-        background-color: #EFF6FF;
-        border: 1px solid #BFDBFE;
-        border-left: 4px solid #3B82F6;
+    /* Faixa de Resumo Institucional */
+    .summary-bar-ciee {
+        background: linear-gradient(90deg, #F0F5FF 0%, #FAF5FF 100%);
+        border: 1px solid #E0E7FF;
+        border-left: 4px solid #FF5F00;
         padding: 12px 18px;
         border-radius: 8px;
         margin: 16px 0;
-        font-size: 13px;
-        color: #1E3A8A;
+        font-size: 13.5px;
+        color: #1E293B;
         line-height: 1.5;
     }
 
-    /* Expander de Filtros */
+    /* Caixa de Filtros */
     div[data-testid="stExpander"] {
         background-color: #FFFFFF !important;
         border: 1px solid #E2E8F0 !important;
         border-radius: 12px !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
     }
     div[data-testid="stExpander"] summary {
         background-color: #FFFFFF !important;
-        color: #1E293B !important;
+        color: #31006F !important;
         font-weight: 700 !important;
         border-radius: 12px !important;
     }
@@ -183,48 +180,49 @@ st.markdown("""
         border-radius: 8px !important;
     }
     .stTextInput label, .stSelectbox label, .stNumberInput label {
-        color: #475569 !important;
+        color: #334155 !important;
         font-weight: 600 !important;
         font-size: 12px !important;
     }
 
-    /* Botões */
+    /* Botão Principal Laranja CIEE */
     .stButton button {
-        background-color: #4F46E5 !important;
+        background-color: #FF5F00 !important;
         color: #FFFFFF !important;
         border: none !important;
         border-radius: 8px !important;
-        font-weight: 600 !important;
-        padding: 8px 16px !important;
-        box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3) !important;
+        font-weight: 700 !important;
+        padding: 8px 18px !important;
+        box-shadow: 0 2px 8px rgba(255, 95, 0, 0.35) !important;
+        transition: background-color 0.15s ease;
     }
     .stButton button:hover {
-        background-color: #4338CA !important;
+        background-color: #E05300 !important;
     }
     
-    /* Container do Dataframe */
+    /* Container da Relação de Empresas */
     [data-testid="stDataFrame"] {
         background-color: #FFFFFF !important;
         border: 1px solid #E2E8F0 !important;
         border-radius: 12px !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
         padding: 6px !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# TOPO CORPORATIVO
+# TOPO CORPORATIVO INSTITUCIONAL
 # ==========================================
 st.markdown("""
-    <div class="clean-top-bar">
-        <div class="clean-title">
-            <span>🏢 Prospecção e Carteira de CNPJs</span>
-            <span class="clean-subtitle">| Base Operacional</span>
+    <div class="ciee-top-bar">
+        <div class="ciee-title">
+            <span>🏛️ PROSPECÇÃO DE CNPJs</span>
+            <span style="font-size: 14px; font-weight: 400; opacity: 0.9;">| Base Operacional</span>
         </div>
-        <div class="clean-badge-live">
+        <div class="ciee-badge-live">
             <span class="live-dot"></span>
-            <span>Painel Ativo</span>
+            <span>Operação Ativa</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -352,7 +350,7 @@ qtd_negados = kpi_res.negados or 0
 pct = lambda val: (val / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
 
 # ==========================================
-# CARDS DE INDICADORES (CLEAN SAAS)
+# CARDS DE INDICADORES (PALETA CIEE)
 # ==========================================
 c_t, c_nc, c_c, c_cf, c_conv, c_pa, c_pn = st.columns(7)
 
@@ -360,7 +358,7 @@ with c_t:
     st.markdown(f"""
         <div class="card-kpi border-total">
             <div class="kpi-title">Total Base</div>
-            <div class="kpi-value">{fmt_num(total_cnpjs)}</div>
+            <div class="kpi-value" style="color: #31006F;">{fmt_num(total_cnpjs)}</div>
             <div class="kpi-sub">CNPJs Filtrados</div>
         </div>
     """, unsafe_allow_html=True)
@@ -369,7 +367,7 @@ with c_nc:
     st.markdown(f"""
         <div class="card-kpi border-nao-contatado">
             <div class="kpi-title">Não Contatados</div>
-            <div class="kpi-value">{fmt_num(qtd_nao_contatados)}</div>
+            <div class="kpi-value" style="color: #64748B;">{fmt_num(qtd_nao_contatados)}</div>
             <div class="kpi-sub">{pct(qtd_nao_contatados):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
@@ -378,7 +376,7 @@ with c_c:
     st.markdown(f"""
         <div class="card-kpi border-contatado">
             <div class="kpi-title">Contatados</div>
-            <div class="kpi-value">{fmt_num(qtd_contatados)}</div>
+            <div class="kpi-value" style="color: #005CB9;">{fmt_num(qtd_contatados)}</div>
             <div class="kpi-sub">{pct(qtd_contatados):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
@@ -387,7 +385,7 @@ with c_cf:
     st.markdown(f"""
         <div class="card-kpi border-futuro">
             <div class="kpi-title">Contato Futuro</div>
-            <div class="kpi-value">{fmt_num(qtd_futuros)}</div>
+            <div class="kpi-value" style="color: #722282;">{fmt_num(qtd_futuros)}</div>
             <div class="kpi-sub">{pct(qtd_futuros):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
@@ -396,7 +394,7 @@ with c_conv:
     st.markdown(f"""
         <div class="card-kpi border-convertido">
             <div class="kpi-title">Convertidos</div>
-            <div class="kpi-value" style="color: #059669;">{fmt_num(qtd_convertidos)}</div>
+            <div class="kpi-value" style="color: #FF5F00;">{fmt_num(qtd_convertidos)}</div>
             <div class="kpi-sub">{pct(qtd_convertidos):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
@@ -405,7 +403,7 @@ with c_pa:
     st.markdown(f"""
         <div class="card-kpi border-ativo">
             <div class="kpi-title">Parceiro Ativo</div>
-            <div class="kpi-value" style="color: #0D9488;">{fmt_num(qtd_ativos)}</div>
+            <div class="kpi-value" style="color: #059669;">{fmt_num(qtd_ativos)}</div>
             <div class="kpi-sub">{pct(qtd_ativos):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
@@ -421,10 +419,10 @@ with c_pn:
 
 # Barra de Resumo Informativa
 st.markdown(f"""
-    <div class="summary-bar-clean">
-        💡 Dos <b>{fmt_num(total_cnpjs)}</b> CNPJs filtrados, <b>{fmt_num(qtd_nao_contatados)}</b> ainda aguardam primeira abordagem. 
+    <div class="summary-bar-ciee">
+        Dos <b>{fmt_num(total_cnpjs)}</b> CNPJs filtrados, <b>{fmt_num(qtd_nao_contatados)}</b> ainda aguardam primeira abordagem. 
         A equipe já trabalhou <b>{fmt_num(qtd_contatados + qtd_futuros + qtd_convertidos + qtd_ativos + qtd_negados)}</b> empresas, 
-        com <b>{fmt_num(qtd_convertidos)}</b> conversões e <b>{fmt_num(qtd_ativos)}</b> parceiros ativos registrados.
+        resultando em <b>{fmt_num(qtd_convertidos)}</b> conversões e <b>{fmt_num(qtd_ativos)}</b> parceiros ativos na base.
     </div>
 """, unsafe_allow_html=True)
 
@@ -487,13 +485,13 @@ def abrir_modal_tratamento(cnpj):
     email_fmt = row.get('correio_eletronico') or "Não informado"
     nome_exibicao = row.get('nome_fantasia') if row.get('nome_fantasia') and str(row.get('nome_fantasia')).strip() not in ['nan', 'None', ''] else row.get('razao_social')
 
-    # Card interno do modal limpo e legível
+    # Card da Empresa no Modal
     st.markdown(f"""
-        <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px; margin-bottom: 16px;">
-            <div style="font-size: 17px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">🏢 {nome_exibicao}</div>
+        <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-left: 5px solid #FF5F00; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+            <div style="font-size: 17px; font-weight: 800; color: #31006F; margin-bottom: 8px;">🏢 {nome_exibicao}</div>
             <div style="font-size: 13px; color: #475569; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                 <div><b>Razão Social:</b> {row.get('razao_social', '-')}</div>
-                <div><b>CNPJ:</b> <code style="background-color: #E2E8F0; color: #0F172A; padding: 2px 6px; border-radius: 4px;">{row.get('cnpj_formatado', '-')}</code></div>
+                <div><b>CNPJ:</b> <code style="background-color: #F1F5F9; color: #005CB9; font-weight: 700; padding: 2px 6px; border-radius: 4px;">{row.get('cnpj_formatado', '-')}</code></div>
                 <div><b>Porte:</b> {row.get('porte_empresa', 'Não Informado')}</div>
                 <div><b>Telefone:</b> {tel_fmt}</div>
                 <div style="grid-column: span 2;"><b>E-mail:</b> {email_fmt}</div>
