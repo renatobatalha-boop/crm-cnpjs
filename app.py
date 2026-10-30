@@ -33,7 +33,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. IDENTIDADE VISUAL EXPO CIEE (CSS COMPLETO AJUSTADO)
+# 3. IDENTIDADE VISUAL EXPO CIEE (CSS COMPLETO E DEFINITIVO)
 # ==========================================
 st.markdown("""
     <style>
@@ -118,12 +118,12 @@ st.markdown("""
         box-shadow: 0 0 10px #10B981;
     }
 
-    /* Cards KPI baseados nas cores solicitadas */
+    /* Cards KPI baseados nas cores solicitadas com Efeito 3D */
     .card-kpi {
         background: rgba(35, 15, 65, 0.7) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 16px;
-        padding: 18px;
+        padding: 16px 18px;
         height: 125px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.08);
         display: flex;
@@ -192,18 +192,20 @@ st.markdown("""
         align-items: center;
         justify-content: center;
     }
+    
+    /* EVIDENCIANDO NÚMEROS: Fonte aumentada para 34px, em negrito e com sombra proeminente */
     .kpi-value {
-        font-size: 26px;
-        font-weight: 800;
-        line-height: 1.1;
-        margin: 6px 0 2px 0;
-        color: #FFFFFF;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        font-size: 34px !important;
+        font-weight: 800 !important;
+        line-height: 1.0;
+        margin: 8px 0 4px 0;
+        color: #FFFFFF !important;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 8px rgba(255, 255, 255, 0.2);
     }
     .kpi-sub {
         font-size: 11px;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.65);
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
     }
 
     /* Containers de Filtro em Glassmorphism Escuro */
@@ -224,7 +226,7 @@ st.markdown("""
         border-radius: 10px !important;
     }
 
-    /* BOTÃO LARANJA PREMIUM DA SUA PALETA (#F76D4D) */
+    /* BOTÃO LARANJA PREMIUM DA PALETA */
     .stFormSubmitButton button, .stDownloadButton button {
         background: linear-gradient(135deg, #F76D4D 0%, #D02560 100%) !important;
         color: #FFFFFF !important;
@@ -239,33 +241,24 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(247, 109, 77, 0.45) !important;
     }
 
-    /* ==========================================
-       TABELA PREMIUM ESCURA COM DIVISÓRIAS BRANCAS (Ref. Image 2)
-       ========================================== */
-    /* Sobrescreve o fundo cinza claro padrão do st.dataframe para roxo escuro unificado */
-    div[data-testid="stDataFrame"], 
-    div[data-testid="stDataFrame"] > div, 
-    div[data-testid="stDataFrame"] [role="grid"] {
-        background-color: #210d3a !important;
-        color: #ffffff !important;
-    }
-    
-    /* Cabeçalhos da tabela escuros com divisor */
-    div[data-testid="stDataFrame"] [role="columnheader"] {
-        background-color: #16072b !important;
-        color: rgba(255, 255, 255, 0.9) !important;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.35) !important;
+    /* =======================================================
+       CORREÇÃO DEFINITIVA DO FUNDO DA TABELA (GLIDE DATA GRID)
+       ======================================================= */
+    /* Força todas as áreas internas do grid do Streamlit a serem pretas/roxo escuro */
+    div[data-testid="stDataFrame"] iframe,
+    div[data-testid="stDataFrame"] > div,
+    div[data-testid="stDataFrame"] [data-testid="StyledFullScreenButton"]+div,
+    div[data-testid="stDataFrame"] [role="grid"],
+    div[data-testid="stDataFrame"] canvas {
+        background-color: #120422 !important;
+        color-scheme: dark !important; /* Força o componente a herdar as cores escuras nativas */
     }
 
-    /* Customização fina das linhas e colunas com divisórias horizontais brancas suaves */
-    div[data-testid="stDataFrame"] [role="row"] {
-        background-color: #210d3a !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
-    }
-
-    /* Ajuste de hover nas linhas da tabela */
-    div[data-testid="stDataFrame"] [role="row"]:hover {
-        background-color: rgba(255, 255, 255, 0.05) !important;
+    /* Força o container do widget a ocultar qualquer elemento de fundo branco residual */
+    div[data-testid="stDataFrame"] {
+        background-color: #120422 !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 12px !important;
     }
 
     /* Camada para clique nos cards KPI */
@@ -444,7 +437,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     status_atual = st.session_state["filtro_status_clique"]
 
     # ==========================================
-    # DASHBOARD DE MÉTRICAS 3D
+    # DASHBOARD DE MÉTRICAS 3D (COM NÚMEROS DESTACADOS)
     # ==========================================
     c_t, c_nc, c_c, c_cf, c_conv, c_pa, c_pn = st.columns(7)
     
@@ -453,7 +446,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-total {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Total Base</span><span class="kpi-icon">🏛️</span></div>
-                <div class="kpi-value" style="color: #9ab4f5;">{fmt_num(total_cnpjs)}</div>
+                <div class="kpi-value">{fmt_num(total_cnpjs)}</div>
                 <div class="kpi-sub">100% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -466,7 +459,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-nao-contatado {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Não Contatados</span><span class="kpi-icon">⏳</span></div>
-                <div class="kpi-value" style="color: #cbd5e1;">{fmt_num(qtd_nao_contatados)}</div>
+                <div class="kpi-value">{fmt_num(qtd_nao_contatados)}</div>
                 <div class="kpi-sub">{pct(qtd_nao_contatados):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -479,7 +472,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-contatado {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Contatados</span><span class="kpi-icon">📞</span></div>
-                <div class="kpi-value" style="color: #ea70db;">{fmt_num(qtd_contatados)}</div>
+                <div class="kpi-value">{fmt_num(qtd_contatados)}</div>
                 <div class="kpi-sub">{pct(qtd_contatados):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -492,7 +485,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-futuro {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Contato Futuro</span><span class="kpi-icon">📅</span></div>
-                <div class="kpi-value" style="color: #f3588f;">{fmt_num(qtd_futuros)}</div>
+                <div class="kpi-value">{fmt_num(qtd_futuros)}</div>
                 <div class="kpi-sub">{pct(qtd_futuros):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -505,7 +498,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-convertido {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Convertidos</span><span class="kpi-icon">🚀</span></div>
-                <div class="kpi-value" style="color: #fca08a;">{fmt_num(qtd_convertidos)}</div>
+                <div class="kpi-value">{fmt_num(qtd_convertidos)}</div>
                 <div class="kpi-sub">{pct(qtd_convertidos):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -518,7 +511,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-ativo {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Parceiro Ativo</span><span class="kpi-icon">🤝</span></div>
-                <div class="kpi-value" style="color: #34d399;">{fmt_num(qtd_ativos)}</div>
+                <div class="kpi-value">{fmt_num(qtd_ativos)}</div>
                 <div class="kpi-sub">{pct(qtd_ativos):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -531,7 +524,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-negado {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Prop. Negada</span><span class="kpi-icon">✖️</span></div>
-                <div class="kpi-value" style="color: #f87171;">{fmt_num(qtd_negados)}</div>
+                <div class="kpi-value">{fmt_num(qtd_negados)}</div>
                 <div class="kpi-sub">{pct(qtd_negados):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -919,4 +912,5 @@ else:
             st.caption("Nenhuma interação cadastrada.")
     except Exception:
         st.caption("Carregando gráficos...")
+
 
