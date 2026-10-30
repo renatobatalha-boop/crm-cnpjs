@@ -34,7 +34,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. IDENTIDADE VISUAL EXPO CIEE & 3D (CSS)
+# 3. IDENTIDADE VISUAL EXPO CIEE & 3D (CSS COMPLETO)
 # ==========================================
 st.markdown("""
     <style>
@@ -43,7 +43,7 @@ st.markdown("""
     header {visibility: hidden;}
     [data-testid="collapsedControl"] {display: block;}
     
-    /* Fundo da aplicação */
+    /* Fundo do aplicativo */
     .stApp {
         background-color: #1a082e !important;
         background-image: radial-gradient(circle at 50% 0%, #321054 0%, #1a082e 100%) !important;
@@ -168,6 +168,7 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.5) !important;
     }
 
+    /* Card Selecionado com Borda Iluminada Laranja */
     .card-kpi-ativo {
         border: 2px solid #F76D4D !important;
         box-shadow: 0 0 25px rgba(247, 109, 77, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.3) !important;
@@ -184,7 +185,7 @@ st.markdown("""
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        color: rgba(255, 255, 255, 0.9);
+        color: rgba(255, 255, 255, 0.85);
     }
     .kpi-icon {
         font-size: 14px;
@@ -225,21 +226,28 @@ st.markdown("""
         text-shadow: 0 1px 2px rgba(0,0,0,0.8) !important;
     }
 
-    /* Padronização dos inputs e selects (Fundo Escuro e Letra Branca) */
+    /* =======================================================
+       CORREÇÃO: PADRONIZAÇÃO ABSOLUTA DOS FILTROS (FUNDO PRETO)
+       ======================================================= */
     div[data-baseweb="base-input"],
     div[data-baseweb="input"],
     .stTextInput > div > div,
     .stNumberInput > div > div,
-    .stNumberInput [data-baseweb="input"] {
+    .stNumberInput [data-baseweb="input"],
+    div[data-baseweb="select"],
+    div[data-baseweb="select"] > div {
         background-color: #120422 !important;
         border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        color: #FFFFFF !important;
         border-radius: 10px !important;
     }
 
+    /* Força os textos digitados e placeholders para branco nítido */
     .stTextInput input,
     .stNumberInput input,
     div[data-baseweb="base-input"] input,
-    div[data-baseweb="input"] input {
+    div[data-baseweb="input"] input,
+    div[data-baseweb="select"] span {
         background-color: transparent !important;
         color: #FFFFFF !important;
         -webkit-text-fill-color: #FFFFFF !important;
@@ -257,59 +265,7 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
 
-    div[data-baseweb="select"],
-    div[data-baseweb="select"] > div {
-        background-color: #120422 !important;
-        border: 1px solid rgba(255, 255, 255, 0.25) !important;
-        color: #FFFFFF !important;
-        border-radius: 10px !important;
-    }
-    div[data-baseweb="select"] span {
-        color: #FFFFFF !important;
-    }
-
-    /* =======================================================
-       4. SOLUÇÃO DA TABELA: FUNDO ROXO E LETRAS/LINHAS EM BRANCO
-       ======================================================= */
-    /* Altera e unifica o plano de fundo do container da tabela para o Roxo Escuro */
-    div[data-testid="stDataFrame"], 
-    div[data-testid="stDataFrame"] > div, 
-    div[data-testid="stDataFrame"] [role="grid"],
-    div[data-testid="stDataFrame"] canvas,
-    div[data-testid="stDataFrame"] [role="presentation"],
-    div[data-testid="stDataFrame"] [role="rowgroup"],
-    div[data-testid="stDataFrame"] [role="row"] {
-        background-color: #1a082e !important;
-        background-image: none !important;
-        color: #FFFFFF !important;
-    }
-
-    /* Define os cabeçalhos em roxo com borda inferior branca */
-    div[data-testid="stDataFrame"] [role="columnheader"] {
-        background-color: #120422 !important;
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
-    }
-
-    /* Garante células com texto branco nítido e linhas de divisão brancas */
-    div[data-testid="stDataFrame"] td, 
-    div[data-testid="stDataFrame"] th,
-    div[data-testid="stDataFrame"] [role="gridcell"] {
-        color: #FFFFFF !important;
-        -webkit-text-fill-color: #FFFFFF !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
-    }
-
-    /* Hover com realce roxo sutil nas linhas da tabela */
-    div[data-testid="stDataFrame"] [role="row"]:hover,
-    div[data-testid="stDataFrame"] [role="row"]:hover td {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-    }
-
-    /* Container de expander roxo escuro contínuo */
+    /* Container de expander roxo escuro */
     div[data-testid="stExpander"], .section-header-bar {
         background-color: rgba(25, 12, 45, 0.8) !important;
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -317,6 +273,56 @@ st.markdown("""
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* =======================================================
+       CORREÇÃO DA TABELA HTML: TEXTO BRANCO E DIVISÓRIAS BRANCAS
+       ======================================================= */
+    .table-expo-wrapper {
+        background-color: #1a082e !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 15px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .table-expo {
+        width: 100%;
+        border-collapse: collapse;
+        color: #FFFFFF !important;
+        background-color: #1a082e !important;
+        text-align: left;
+    }
+    .table-expo th {
+        background-color: #120422 !important;
+        color: #FFFFFF !important;
+        padding: 14px 16px;
+        font-weight: 700;
+        font-size: 13px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.35) !important;
+    }
+    .table-expo td {
+        padding: 12px 16px;
+        font-size: 13px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+    .table-expo tr:hover {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+    }
+
+    /* Botão Tratar Lead */
+    .btn-tratar {
+        background: linear-gradient(135deg, #F76D4D 0%, #D02560 100%);
+        color: white !important;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 0 4px 10px rgba(247, 109, 77, 0.3);
     }
 
     /* Botão Laranja CIEE */
@@ -375,6 +381,7 @@ def eh_celular(numero_limpo):
     return False
 
 def extrair_datas_observacoes(texto_obs):
+    """Extrai todas as datas de contato no padrão [DD/MM/AAAA ...]"""
     if not texto_obs or not isinstance(texto_obs, str):
         return []
     padrao = r'\[(\d{2}/\d{2}/\d{4})'
@@ -689,7 +696,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         with col_p2:
             pagina_atual = st.number_input("Página Atual:", min_value=1, value=1, step=1)
 
-    # Cálculo do Offset para Paginação SQL
     offset_val = (pagina_atual - 1) * registros_por_pagina
 
     # Montagem Dinâmica de WHERE SQL
@@ -810,7 +816,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         idx_status = STATUS_OFICIAIS.index(status_banco) if status_banco in STATUS_OFICIAIS else 0
         col_st, col_rp = st.columns(2)
         with col_st:
-            status_selecionado = st.selectbox("📌 Status de Evolução:", options=STATUS_OFICIAIS, index=idx_status, key=f"status_select_{cnpj}")
+            status_selecionado = st.selectbox("📌 Status de Evolução:", options=STATUS_OFICIAIS, index=idx_status, key=f"status_select\_{cnpj}")
         with col_rp:
             resp_banco = row.get('responsavel_tratamento', '') or ''
             idx_operador_atual = 0
@@ -823,15 +829,15 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 "👤 Atribuir Responsável:",
                 options=LISTA_OPERADORES_OFICIAIS,
                 index=idx_operador_atual,
-                key=f"resp_select_{cnpj}"
+                key=f"resp_select\_{cnpj}"
             )
 
         ticket_conversao = ""
         if status_selecionado == "Lead Convertido":
-            ticket_conversao = st.text_input("🎟️ Protocolo / Ticket CIEE:", placeholder="Ex: CIEE-SP-12345", key=f"ticket_{cnpj}")
+            ticket_conversao = st.text_input("🎟️ Protocolo / Ticket CIEE:", placeholder="Ex: CIEE-SP-12345", key=f"ticket\_{cnpj}")
         motivo_recusa_sel = ""
         if status_selecionado == "Proposta Negada":
-            motivo_recusa_sel = st.selectbox("❌ Principal Motivo da Recusa:", MOTIVOS_RECUSA_OPCOES, key=f"recusa_{cnpj}")
+            motivo_recusa_sel = st.selectbox("❌ Principal Motivo da Recusa:", MOTIVOS_RECUSA_OPCOES, key=f"recusa\_{cnpj}")
 
         st.markdown("📜 **Histórico de Interações:**")
         obs_banco = row.get('observacoes', '') or ''
@@ -840,7 +846,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         else:
             st.caption("Sem interações salvas.")
 
-        with st.form(f"form_tratamento_{cnpj}"):
+        with st.form(f"form_tratamento\_{cnpj}"):
             nova_nota = st.text_area(
                 "✍️ Registrar Detalhes de Nova Interação:",
                 placeholder="Anotar resumo de ligação, retorno, decisor contactado...",
@@ -862,7 +868,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                     carimbo_tempo = datetime.now().strftime("%d/%m/%Y %H:%M")
                     autor = novo_resp_selecionado or st.session_state["usuario_ativo"]
                     novo_bloco = f"[{carimbo_tempo} - {autor}]: {nova_nota.strip()}"
-                    base_obs = f"{novo_bloco}\n{base_obs}".strip() if base_obs else novo_bloco
+                    base_obs = f"{novo_bloco}\\n{base_obs}".strip() if base_obs else novo_bloco
                 obs_final = base_obs
                 if status_selecionado == "Lead Convertido" and ticket_conversao.strip():
                     registro_ticket = f"[TICKET: {ticket_conversao.strip()}]"
@@ -893,7 +899,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                     st.error(f"Erro ao salvar: {err}")
 
     # ==========================================
-    # TABELA PRINCIPAL DE EMPRESAS
+    # TABELA PRINCIPAL DE EMPRESAS - ESTILIZAÇÃO COMPLETA ROXO E BRANCO
     # ==========================================
     query_dados = f"""
         SELECT 
@@ -932,7 +938,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
 
         df_tabela = df_tabela[df_tabela['observacoes'].apply(esta_no_periodo)]
 
-    # Titulo e Botão de Exportação Alinhados
+    # Titulo e Botão de Exportação
     col_titulo_tab, col_export = st.columns([3, 2])
     with col_titulo_tab:
         status_indicador = f" • Filtro ativo: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
@@ -944,7 +950,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             st.download_button(
                 label="📥 Exportar Dados Atuais (CSV)",
                 data=csv_data,
-                file_name=f"base_empresas_ciee_pag_{pagina_atual}.csv",
+                file_name=f"base_empresas_ciee_pag\_{pagina_atual}.csv",
                 mime="text/csv",
                 use_container_width=True
             )
@@ -952,33 +958,68 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     if df_tabela.empty:
         st.info("Nenhum CNPJ localizado com os filtros selecionados.")
     else:
-        st.caption("👉 **Ação:** Toque em qualquer linha da tabela para abrir o modal do lead e registrar follow-ups.")
+        # ==========================================
+        # TABELA HIGH-FIDELITY ROXO E BRANCO (SOLUÇÃO DE DESIGN DA IMAGEM)
+        # ==========================================
+        html_code = """
+        <div class="table-expo-wrapper">
+            <table class="table-expo">
+                <thead>
+                    <tr>
+                        <th>Ação</th>
+                        <th>CNPJ</th>
+                        <th>Razão Social</th>
+                        <th>Nome Fantasia</th>
+                        <th>Porte</th>
+                        <th>Segmentação</th>
+                        <th>Tipo de Setor</th>
+                        <th>Bairro</th>
+                        <th>CEP</th>
+                    </tr>
+                </thead>
+                <tbody>
+        """
         
-        event = st.dataframe(
-            df_tabela[[
-                'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
-                'segmentacao', 'setor_tipo', 'bairro', 'cep'
-            ]],
-            column_config={
-                "cnpj_formatado": "CNPJ",
-                "razao_social": "Razão Social",
-                "nome_fantasia": "Nome Fantasia",
-                "porte_empresa": "Porte",
-                "segmentacao": "Segmentação",
-                "setor_tipo": "Tipo de Setor",
-                "bairro": "Bairro",
-                "cep": "CEP"
-            },
-            hide_index=True,
-            use_container_width=True,
-            on_select="rerun",
-            selection_mode="single-row",
-            key="tabela_leads"
-        )
+        # Gerando dinamicamente cada linha de forma altamente estilizada e polida
+        for i, row in df_tabela.iterrows():
+            cnpj = row['cnpj_formatado']
+            razao = row['razao_social'] if row['razao_social'] else '-'
+            fantasia = row['nome_fantasia'] if row['nome_fantasia'] and str(row['nome_fantasia']) != 'None' else '-'
+            porte = row['porte_empresa'] if row['porte_empresa'] else '-'
+            segmento = row['segmentacao']
+            setor = row['setor_tipo']
+            bairro = row['bairro']
+            cep = row['cep'] if row['cep'] else '-'
+            
+            # Link de âncora para ativar tratamento do lead de forma fluida
+            html_code += f"""
+                    <tr>
+                        <td><a href="?cnpj_tratar={cnpj}" target="_self" class="btn-tratar">Tratar Lead</a></td>
+                        <td><b>{cnpj}</b></td>
+                        <td>{razao}</td>
+                        <td>{fantasia}</td>
+                        <td>{porte}</td>
+                        <td>{segmento}</td>
+                        <td>{setor}</td>
+                        <td>{bairro}</td>
+                        <td>{cep}</td>
+                    </tr>
+            """
+            
+        html_code += """
+                </tbody>
+            </table>
+        </div>
+        """
         
-        if event and event.selection and event.selection.rows:
-            idx_selecionado = event.selection.rows[0]
-            cnpj_clicado = df_tabela.iloc[idx_selecionado]['cnpj_formatado']
+        st.markdown(html_code, unsafe_allow_html=True)
+
+        # Captura o clique da linha e abre o modal perfeitamente
+        query_params = st.query_params
+        if "cnpj_tratar" in query_params:
+            cnpj_clicado = query_params["cnpj_tratar"]
+            # Limpa o query param para evitar loops
+            st.query_params.clear()
             abrir_modal_tratamento(cnpj_clicado)
 
         total_paginas = (total_filtrado // registros_por_pagina) + (1 if total_filtrado % registros_por_pagina > 0 else 0)
@@ -1053,4 +1094,5 @@ else:
             st.bar_chart(df_recusas.set_index("Motivo"), color="#D02560")
         else:
             st.caption("Sem dados de recusa informados.")
+
 
