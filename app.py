@@ -34,7 +34,7 @@ def fmt_num(val):
     return f"{int(val):,}".replace(",", ".")
 
 # ==========================================
-# TEMA DARK NEON ROXO (INSPIRADO NA REFERÊNCIA)
+# TEMA DARK NEON ROXO COMPLETO (INCLUINDO TABELA)
 # ==========================================
 st.markdown("""
     <style>
@@ -44,8 +44,8 @@ st.markdown("""
     
     /* Fundo da aplicação */
     .stApp {
-        background-color: #120722;
-        color: #f1f5f9;
+        background-color: #120722 !important;
+        color: #f1f5f9 !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
@@ -97,7 +97,7 @@ st.markdown("""
         box-shadow: 0 0 10px #4ade80;
     }
 
-    /* Cards de Indicadores Estilo Dashboard Neon */
+    /* Cards de Indicadores */
     .kpi-card {
         border-radius: 14px;
         padding: 16px 18px;
@@ -113,7 +113,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
 
-    /* Cores gradientes específicas dos Cards */
     .kpi-total {
         background: linear-gradient(135deg, #a855f7 0%, #6b21a8 100%);
         color: #ffffff;
@@ -164,7 +163,7 @@ st.markdown("""
         opacity: 0.75;
     }
 
-    /* Card informativo de resumo de texto */
+    /* Faixa de Resumo */
     .neon-summary-bar {
         background: #1c0e35;
         border: 1px solid rgba(255, 255, 255, 0.08);
@@ -179,16 +178,17 @@ st.markdown("""
     /* Container de Expander dos Filtros */
     div[data-testid="stExpander"] {
         background-color: #1a0b30 !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
         border-radius: 12px !important;
-        color: white !important;
     }
     div[data-testid="stExpander"] summary {
+        background-color: #1a0b30 !important;
         color: #f8fafc !important;
         font-weight: 700 !important;
+        border-radius: 12px !important;
     }
 
-    /* Customização dos Inputs */
+    /* Inputs e Caixas de Seleção */
     .stTextInput input, .stSelectbox [data-baseweb="select"], .stNumberInput input {
         background-color: #240e42 !important;
         color: #ffffff !important;
@@ -201,6 +201,21 @@ st.markdown("""
         font-size: 12px !important;
     }
     
+    /* Customização do Dataframe / Tabela Escura */
+    [data-testid="stDataFrame"] {
+        background-color: #190a2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        padding: 6px !important;
+    }
+    [data-testid="stDataFrame"] canvas {
+        filter: invert(0.92) hue-rotate(180deg) !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stDataFrame"] div {
+        color: #ffffff !important;
+    }
+
     /* Botões */
     .stButton button {
         background: linear-gradient(90deg, #9333ea 0%, #7e22ce 100%) !important;
@@ -423,7 +438,7 @@ with c_pn:
         </div>
     """, unsafe_allow_html=True)
 
-# Faixa de resumo textual (como na referência)
+# Faixa de resumo textual
 st.markdown(f"""
     <div class="neon-summary-bar">
         Dos <b>{fmt_num(total_cnpjs)}</b> CNPJs filtrados, <b>{fmt_num(qtd_nao_contatados)}</b> ainda aguardam primeiro contato.
@@ -491,7 +506,6 @@ def abrir_modal_tratamento(cnpj):
     email_fmt = row.get('correio_eletronico') or "Não informado"
     nome_exibicao = row.get('nome_fantasia') if row.get('nome_fantasia') and str(row.get('nome_fantasia')).strip() not in ['nan', 'None', ''] else row.get('razao_social')
 
-    # Card escuro dentro da modal
     st.markdown(f"""
         <div style="background: linear-gradient(135deg, #1f0b3b 0%, #130726 100%); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 16px; margin-bottom: 15px; color: #f1f5f9;">
             <div style="font-size: 17px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">🏢 {nome_exibicao}</div>
@@ -586,7 +600,7 @@ def abrir_modal_tratamento(cnpj):
                 st.error(f"Erro ao salvar: {err}")
 
 # ==========================================
-# RELAÇÃO DE EMPRESAS
+# RELAÇÃO DE EMPRESAS (TABELA ESCURA)
 # ==========================================
 st.markdown(f"#### 📋 Relação de Empresas ({fmt_num(total_cnpjs)} CNPJs localizados)")
 
