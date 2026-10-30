@@ -212,9 +212,7 @@ st.markdown("""
         color: rgba(255, 255, 255, 0.85);
     }
 
-    /* =======================================================
-       1. LABELS DOS FILTROS (100% VISÍVEIS EM BRANCO)
-       ======================================================= */
+    /* Labels dos Filtros */
     div[data-testid="stExpander"] label, 
     div[data-testid="stExpander"] label p, 
     div[data-testid="stExpander"] p,
@@ -227,10 +225,7 @@ st.markdown("""
         text-shadow: 0 1px 2px rgba(0,0,0,0.8) !important;
     }
 
-    /* =======================================================
-       2. PADRONIZAÇÃO TOTAL: FUNDO PRETO/ESCURO NOS FILTROS
-       (Corrige Bairro, Razão Social e Página Atual)
-       ======================================================= */
+    /* Padronização dos inputs e selects (Fundo Escuro e Letra Branca) */
     div[data-baseweb="base-input"],
     div[data-baseweb="input"],
     .stTextInput > div > div,
@@ -241,7 +236,6 @@ st.markdown("""
         border-radius: 10px !important;
     }
 
-    /* Informação interna digitada em branco */
     .stTextInput input,
     .stNumberInput input,
     div[data-baseweb="base-input"] input,
@@ -257,14 +251,12 @@ st.markdown("""
         -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
     }
 
-    /* Botões +/- do campo de número */
     .stNumberInput button {
         background-color: #1a082e !important;
         color: #FFFFFF !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
 
-    /* Selectboxes no mesmo padrão preto/escuro */
     div[data-baseweb="select"],
     div[data-baseweb="select"] > div {
         background-color: #120422 !important;
@@ -277,32 +269,44 @@ st.markdown("""
     }
 
     /* =======================================================
-       3. TABELA COM DADOS BRANCOS E LINHAS DIVISÓRIAS BRANCAS
+       4. SOLUÇÃO DA TABELA: FUNDO ROXO E LETRAS/LINHAS EM BRANCO
        ======================================================= */
-    div[data-testid="stDataFrame"] {
-        background-color: #120422 !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    /* Altera e unifica o plano de fundo do container da tabela para o Roxo Escuro */
+    div[data-testid="stDataFrame"], 
+    div[data-testid="stDataFrame"] > div, 
+    div[data-testid="stDataFrame"] [role="grid"],
+    div[data-testid="stDataFrame"] canvas,
+    div[data-testid="stDataFrame"] [role="presentation"],
+    div[data-testid="stDataFrame"] [role="rowgroup"],
+    div[data-testid="stDataFrame"] [role="row"] {
+        background-color: #1a082e !important;
+        background-image: none !important;
+        color: #FFFFFF !important;
     }
 
-    /* Força texto branco e linhas divisórias brancas nas células */
-    div[data-testid="stDataFrame"] table {
+    /* Define os cabeçalhos em roxo com borda inferior branca */
+    div[data-testid="stDataFrame"] [role="columnheader"] {
         background-color: #120422 !important;
-        color: #FFFFFF !important;
-    }
-    div[data-testid="stDataFrame"] th {
-        background-color: #1f0838 !important;
         color: #FFFFFF !important;
         font-weight: 700 !important;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.35) !important;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
         border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
     }
-    div[data-testid="stDataFrame"] td {
-        background-color: #120422 !important;
+
+    /* Garante células com texto branco nítido e linhas de divisão brancas */
+    div[data-testid="stDataFrame"] td, 
+    div[data-testid="stDataFrame"] th,
+    div[data-testid="stDataFrame"] [role="gridcell"] {
         color: #FFFFFF !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Hover com realce roxo sutil nas linhas da tabela */
+    div[data-testid="stDataFrame"] [role="row"]:hover,
+    div[data-testid="stDataFrame"] [role="row"]:hover td {
+        background-color: rgba(255, 255, 255, 0.05) !important;
     }
 
     /* Container de expander roxo escuro contínuo */
@@ -685,6 +689,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         with col_p2:
             pagina_atual = st.number_input("Página Atual:", min_value=1, value=1, step=1)
 
+    # Cálculo do Offset para Paginação SQL
     offset_val = (pagina_atual - 1) * registros_por_pagina
 
     # Montagem Dinâmica de WHERE SQL
@@ -1048,3 +1053,4 @@ else:
             st.bar_chart(df_recusas.set_index("Motivo"), color="#D02560")
         else:
             st.caption("Sem dados de recusa informados.")
+
