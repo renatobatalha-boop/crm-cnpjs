@@ -33,7 +33,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. IDENTIDADE VISUAL E AJUSTES DE EXPANSÃO LATERAL (CSS)
+# 3. IDENTIDADE VISUAL E CARDS CLICÁVEIS (CSS)
 # ==========================================
 st.markdown("""
     <style>
@@ -93,18 +93,27 @@ st.markdown("""
         box-shadow: 0 0 8px #FF5F00;
     }
 
-    /* Cards e Botões de Filtro Rápido */
+    /* Estrutura do Card KPI Visual */
     .card-kpi {
         background-color: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 12px 12px 0 0;
-        padding: 10px 12px;
+        border-radius: 12px;
+        padding: 12px 14px;
+        height: 96px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         border-top: 4px solid #CBD5E1;
+        pointer-events: none;
     }
+    .card-kpi-ativo {
+        background-color: #FFFDFB;
+        border: 2px solid #FF5F00 !important;
+        border-top: 5px solid #FF5F00 !important;
+        box-shadow: 0 4px 14px rgba(255, 95, 0, 0.18);
+    }
+
     .border-total { border-top-color: #31006F; }
     .border-nao-contatado { border-top-color: #94A3B8; }
     .border-contatado { border-top-color: #005CB9; }
@@ -121,7 +130,7 @@ st.markdown("""
         color: #64748B;
     }
     .kpi-value {
-        font-size: 20px;
+        font-size: 21px;
         font-weight: 900;
         letter-spacing: -0.5px;
         line-height: 1.1;
@@ -130,16 +139,42 @@ st.markdown("""
     }
     .kpi-sub {
         font-size: 10px;
-        font-weight: 500;
+        font-weight: 600;
         color: #94A3B8;
     }
 
-    .stButton button {
-        border-radius: 0 0 10px 10px !important;
+    /* Botão Padrão Laranja CIEE (dentro de modais e forms) */
+    .stFormSubmitButton button {
+        background-color: #FF5F00 !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 8px !important;
         font-weight: 700 !important;
-        font-size: 11px !important;
-        padding: 4px !important;
-        margin-top: -6px !important;
+    }
+
+    /* Camada invisível que torna o Card HTML 100% clicável sem mostrar botão abaixo */
+    div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton {
+        margin-top: -96px !important;
+        height: 96px !important;
+        position: relative;
+        z-index: 10;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton button {
+        height: 96px !important;
+        width: 100% !important;
+        background: transparent !important;
+        color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 12px !important;
+        cursor: pointer !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton button:hover {
+        background: rgba(49, 0, 111, 0.04) !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton button:focus {
+        outline: none !important;
+        box-shadow: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -248,7 +283,6 @@ st.markdown(f"""
 # ==========================================
 if aba_selecionada == "🔍 Prospecção de Leads":
 
-    # Estado de sessão para filtro rápido via clique no Card
     if "filtro_status_clique" not in st.session_state:
         st.session_state["filtro_status_clique"] = "Todos"
 
@@ -281,55 +315,63 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         total_cnpjs = qtd_nao_contatados = qtd_contatados = qtd_futuros = qtd_convertidos = qtd_ativos = qtd_negados = 0
 
     pct = lambda val: (val / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
+    status_atual = st.session_state["filtro_status_clique"]
 
     # ==========================================
-    # DASHBOARD INTERATIVO CLICÁVEL (ACIMA DOS FILTROS)
+    # DASHBOARD DIRETO NO CARD (SEM BOTÕES VISÍVEIS EMBAIXO)
     # ==========================================
     c_t, c_nc, c_c, c_cf, c_conv, c_pa, c_pn = st.columns(7)
 
     with c_t:
-        st.markdown(f'<div class="card-kpi border-total"><div class="kpi-title">Total Base</div><div class="kpi-value" style="color: #31006F;">{fmt_num(total_cnpjs)}</div><div class="kpi-sub">Todos</div></div>', unsafe_allow_html=True)
-        if st.button("Ver Todos", key="btn_card_todos", use_container_width=True):
+        cls_ativo = "card-kpi-ativo" if status_atual == "Todos" else ""
+        st.markdown(f'<div class="card-kpi border-total {cls_ativo}"><div class="kpi-title">Total Base</div><div class="kpi-value" style="color: #31006F;">{fmt_num(total_cnpjs)}</div><div class="kpi-sub">100% da base</div></div>', unsafe_allow_html=True)
+        if st.button(" ", key="card_todos", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Todos"
             st.rerun()
 
     with c_nc:
-        st.markdown(f'<div class="card-kpi border-nao-contatado"><div class="kpi-title">Não Contatados</div><div class="kpi-value" style="color: #64748B;">{fmt_num(qtd_nao_contatados)}</div><div class="kpi-sub">{pct(qtd_nao_contatados):.1f}%</div></div>', unsafe_allow_html=True)
-        if st.button("Ver Pendentes", key="btn_card_nc", use_container_width=True):
+        cls_ativo = "card-kpi-ativo" if status_atual == "Lead Não Contatado" else ""
+        st.markdown(f'<div class="card-kpi border-nao-contatado {cls_ativo}"><div class="kpi-title">Não Contatados</div><div class="kpi-value" style="color: #64748B;">{fmt_num(qtd_nao_contatados)}</div><div class="kpi-sub">{pct(qtd_nao_contatados):.1f}% da base</div></div>', unsafe_allow_html=True)
+        if st.button(" ", key="card_nc", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Lead Não Contatado"
             st.rerun()
 
     with c_c:
-        st.markdown(f'<div class="card-kpi border-contatado"><div class="kpi-title">Contatados</div><div class="kpi-value" style="color: #005CB9;">{fmt_num(qtd_contatados)}</div><div class="kpi-sub">{pct(qtd_contatados):.1f}%</div></div>', unsafe_allow_html=True)
-        if st.button("Ver Contatados", key="btn_card_c", use_container_width=True):
+        cls_ativo = "card-kpi-ativo" if status_atual == "Lead Contatado" else ""
+        st.markdown(f'<div class="card-kpi border-contatado {cls_ativo}"><div class="kpi-title">Contatados</div><div class="kpi-value" style="color: #005CB9;">{fmt_num(qtd_contatados)}</div><div class="kpi-sub">{pct(qtd_contatados):.1f}% da base</div></div>', unsafe_allow_html=True)
+        if st.button(" ", key="card_c", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Lead Contatado"
             st.rerun()
 
     with c_cf:
-        st.markdown(f'<div class="card-kpi border-futuro"><div class="kpi-title">Contato Futuro</div><div class="kpi-value" style="color: #722282;">{fmt_num(qtd_futuros)}</div><div class="kpi-sub">{pct(qtd_futuros):.1f}%</div></div>', unsafe_allow_html=True)
-        if st.button("Ver Futuros", key="btn_card_cf", use_container_width=True):
+        cls_ativo = "card-kpi-ativo" if status_atual == "Contato Futuro" else ""
+        st.markdown(f'<div class="card-kpi border-futuro {cls_ativo}"><div class="kpi-title">Contato Futuro</div><div class="kpi-value" style="color: #722282;">{fmt_num(qtd_futuros)}</div><div class="kpi-sub">{pct(qtd_futuros):.1f}% da base</div></div>', unsafe_allow_html=True)
+        if st.button(" ", key="card_cf", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Contato Futuro"
             st.rerun()
 
     with c_conv:
-        st.markdown(f'<div class="card-kpi border-convertido"><div class="kpi-title">Convertidos</div><div class="kpi-value" style="color: #FF5F00;">{fmt_num(qtd_convertidos)}</div><div class="kpi-sub">{pct(qtd_convertidos):.1f}%</div></div>', unsafe_allow_html=True)
-        if st.button("Ver Convertidos", key="btn_card_conv", use_container_width=True):
+        cls_ativo = "card-kpi-ativo" if status_atual == "Lead Convertido" else ""
+        st.markdown(f'<div class="card-kpi border-convertido {cls_ativo}"><div class="kpi-title">Convertidos</div><div class="kpi-value" style="color: #FF5F00;">{fmt_num(qtd_convertidos)}</div><div class="kpi-sub">{pct(qtd_convertidos):.1f}% da base</div></div>', unsafe_allow_html=True)
+        if st.button(" ", key="card_conv", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Lead Convertido"
             st.rerun()
 
     with c_pa:
-        st.markdown(f'<div class="card-kpi border-ativo"><div class="kpi-title">Parceiro Ativo</div><div class="kpi-value" style="color: #059669;">{fmt_num(qtd_ativos)}</div><div class="kpi-sub">{pct(qtd_ativos):.1f}%</div></div>', unsafe_allow_html=True)
-        if st.button("Ver Ativos", key="btn_card_pa", use_container_width=True):
+        cls_ativo = "card-kpi-ativo" if status_atual == "Parceiro Ativo" else ""
+        st.markdown(f'<div class="card-kpi border-ativo {cls_ativo}"><div class="kpi-title">Parceiro Ativo</div><div class="kpi-value" style="color: #059669;">{fmt_num(qtd_ativos)}</div><div class="kpi-sub">{pct(qtd_ativos):.1f}% da base</div></div>', unsafe_allow_html=True)
+        if st.button(" ", key="card_pa", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Parceiro Ativo"
             st.rerun()
 
     with c_pn:
-        st.markdown(f'<div class="card-kpi border-negado"><div class="kpi-title">Prop. Negada</div><div class="kpi-value" style="color: #DC2626;">{fmt_num(qtd_negados)}</div><div class="kpi-sub">{pct(qtd_negados):.1f}%</div></div>', unsafe_allow_html=True)
-        if st.button("Ver Negados", key="btn_card_pn", use_container_width=True):
+        cls_ativo = "card-kpi-ativo" if status_atual == "Proposta Negada" else ""
+        st.markdown(f'<div class="card-kpi border-negado {cls_ativo}"><div class="kpi-title">Prop. Negada</div><div class="kpi-value" style="color: #DC2626;">{fmt_num(qtd_negados)}</div><div class="kpi-sub">{pct(qtd_negados):.1f}% da base</div></div>', unsafe_allow_html=True)
+        if st.button(" ", key="card_pn", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Proposta Negada"
             st.rerun()
 
-    st.write("")
+    st.caption("👆 **Dica:** Clique diretamente sobre qualquer card acima para filtrar a relação de empresas instantaneamente.")
 
     # ==========================================
     # FILTROS DE BUSCA (ABAIXO DO DASHBOARD)
@@ -340,7 +382,9 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             opcoes_status = ["Todos"] + STATUS_OFICIAIS
             idx_status_sel = opcoes_status.index(st.session_state["filtro_status_clique"]) if st.session_state["filtro_status_clique"] in opcoes_status else 0
             filtro_status_sel = st.selectbox("Status de Prospecção:", opcoes_status, index=idx_status_sel)
-            st.session_state["filtro_status_clique"] = filtro_status_sel
+            if filtro_status_sel != st.session_state["filtro_status_clique"]:
+                st.session_state["filtro_status_clique"] = filtro_status_sel
+                st.rerun()
         with col_f2:
             filtro_responsavel_sel = st.selectbox("Responsável pelo Lead:", lista_responsaveis_filtro, index=0)
         with col_f3:
@@ -609,7 +653,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
 
     col_titulo_tab, col_export = st.columns([4, 1])
     with col_titulo_tab:
-        status_indicador = f" - Filtrando por: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
+        status_indicador = f" • Filtro ativo: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
         st.markdown(f"#### 📋 Relação de Empresas ({fmt_num(total_filtrado)} CNPJs localizados{status_indicador})")
 
     with col_export:
@@ -626,7 +670,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     if df_tabela.empty:
         st.info("Nenhuma empresa encontrada com os parâmetros informados.")
     else:
-        # Colunas exibidas: Sem Responsável e Sem Status (visualização limpa)
         colunas_exibicao = [
             'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
             'segmentacao', 'setor_tipo', 'bairro', 'cep', 'observacoes'
@@ -716,5 +759,12 @@ else:
 
     st.markdown("---")
     st.markdown("#### 📈 Distribuição Geral de Contatos Efetuados")
-    q
-
+    query_total_status = "SELECT status_followup, COUNT(*) as qtd FROM empresas WHERE status_followup IS NOT NULL GROUP BY 1"
+    try:
+        df_status = pd.read_sql(text(query_total_status), engine)
+        if not df_status.empty:
+            st.bar_chart(df_status.set_index("status_followup"), color="#005CB9")
+        else:
+            st.caption("Sem dados de interações cadastrados na base.")
+    except Exception:
+        st.caption("Aguardando novas interações para renderização do gráfico.")
