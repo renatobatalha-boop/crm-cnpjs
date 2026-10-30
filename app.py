@@ -34,7 +34,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. IDENTIDADE VISUAL EXPO CIEE & 3D (CSS ATUALIZADO)
+# 3. IDENTIDADE VISUAL EXPO CIEE & 3D (CSS)
 # ==========================================
 st.markdown("""
     <style>
@@ -43,7 +43,7 @@ st.markdown("""
     header {visibility: hidden;}
     [data-testid="collapsedControl"] {display: block;}
     
-    /* Fundo roxo suave para fluidez */
+    /* Fundo da aplicação */
     .stApp {
         background-color: #1a082e !important;
         background-image: radial-gradient(circle at 50% 0%, #321054 0%, #1a082e 100%) !important;
@@ -168,7 +168,6 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.5) !important;
     }
 
-    /* Card Selecionado com Borda Iluminada Laranja */
     .card-kpi-ativo {
         border: 2px solid #F76D4D !important;
         box-shadow: 0 0 25px rgba(247, 109, 77, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.3) !important;
@@ -185,7 +184,7 @@ st.markdown("""
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        color: rgba(255, 255, 255, 0.85);
+        color: rgba(255, 255, 255, 0.9);
     }
     .kpi-icon {
         font-size: 14px;
@@ -198,23 +197,23 @@ st.markdown("""
         justify-content: center;
     }
     
-    /* NÚMEROS DESTACADOS */
+    /* NÚMEROS DO DASHBOARD (BRANCO BRILHANTE) */
     .kpi-value {
-        font-size: 32px !important;
+        font-size: 34px !important;
         font-weight: 800 !important;
         line-height: 1.0;
         margin: 8px 0 4px 0;
         color: #FFFFFF !important;
-        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 8px rgba(255, 255, 255, 0.2);
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 10px rgba(255, 255, 255, 0.3);
     }
     .kpi-sub {
         font-size: 11px;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.7);
+        color: rgba(255, 255, 255, 0.85);
     }
 
     /* =======================================================
-       CORREÇÃO DE TEXTOS ILEGÍVEIS (labels brancas nítidas)
+       1. LABELS DOS FILTROS (100% VISÍVEIS EM BRANCO)
        ======================================================= */
     div[data-testid="stExpander"] label, 
     div[data-testid="stExpander"] label p, 
@@ -225,54 +224,98 @@ st.markdown("""
         color: #FFFFFF !important;
         font-weight: 700 !important;
         font-size: 13px !important;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8) !important;
     }
 
     /* =======================================================
-       PADRONIZAÇÃO ABSOLUTA E COMPLETA DE TODOS OS CARDS/INPUTS
+       2. PADRONIZAÇÃO TOTAL: FUNDO PRETO/ESCURO NOS FILTROS
+       (Corrige Bairro, Razão Social e Página Atual)
        ======================================================= */
-    /* Selectbox (Filtro suspensos) */
-    div[data-baseweb="select"], .stSelectbox div {
-        background-color: rgba(20, 10, 38, 0.9) !important;
-        color: #FFFFFF !important;
-        border-radius: 10px !important;
-    }
-    div[data-baseweb="select"] input {
-        color: #FFFFFF !important;
-    }
-    
-    /* Inputs de texto (CEP, Bairro, Busca) */
-    .stTextInput input {
-        background-color: rgba(20, 10, 38, 0.9) !important;
-        border: 1px solid rgba(255, 255, 255, 0.18) !important;
-        color: #FFFFFF !important;
+    div[data-baseweb="base-input"],
+    div[data-baseweb="input"],
+    .stTextInput > div > div,
+    .stNumberInput > div > div,
+    .stNumberInput [data-baseweb="input"] {
+        background-color: #120422 !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
         border-radius: 10px !important;
     }
 
-    /* Inputs de número (Páginas) */
-    .stNumberInput input {
-        background-color: rgba(20, 10, 38, 0.9) !important;
-        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    /* Informação interna digitada em branco */
+    .stTextInput input,
+    .stNumberInput input,
+    div[data-baseweb="base-input"] input,
+    div[data-baseweb="input"] input {
+        background-color: transparent !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        font-weight: 600 !important;
+    }
+
+    .stTextInput input::placeholder {
+        color: rgba(255, 255, 255, 0.5) !important;
+        -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    /* Botões +/- do campo de número */
+    .stNumberInput button {
+        background-color: #1a082e !important;
+        color: #FFFFFF !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    /* Selectboxes no mesmo padrão preto/escuro */
+    div[data-baseweb="select"],
+    div[data-baseweb="select"] > div {
+        background-color: #120422 !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
         color: #FFFFFF !important;
         border-radius: 10px !important;
     }
-    /* Estilizando os botões +/- do input numérico */
-    .stNumberInput button {
-        background-color: rgba(255, 255, 255, 0.1) !important;
+    div[data-baseweb="select"] span {
         color: #FFFFFF !important;
+    }
+
+    /* =======================================================
+       3. TABELA COM DADOS BRANCOS E LINHAS DIVISÓRIAS BRANCAS
+       ======================================================= */
+    div[data-testid="stDataFrame"] {
+        background-color: #120422 !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* Força texto branco e linhas divisórias brancas nas células */
+    div[data-testid="stDataFrame"] table {
+        background-color: #120422 !important;
+        color: #FFFFFF !important;
+    }
+    div[data-testid="stDataFrame"] th {
+        background-color: #1f0838 !important;
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.35) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+    div[data-testid="stDataFrame"] td {
+        background-color: #120422 !important;
+        color: #FFFFFF !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
 
     /* Container de expander roxo escuro contínuo */
     div[data-testid="stExpander"], .section-header-bar {
         background-color: rgba(25, 12, 45, 0.8) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
         border-radius: 16px !important;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
     }
 
-    /* BOTÃO LARANJA PREMIUM */
+    /* Botão Laranja CIEE */
     .stFormSubmitButton button, .stDownloadButton button {
         background: linear-gradient(135deg, #F76D4D 0%, #D02560 100%) !important;
         color: #FFFFFF !important;
@@ -285,16 +328,6 @@ st.markdown("""
     .stFormSubmitButton button:hover, .stDownloadButton button:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 10px 25px rgba(247, 109, 77, 0.45) !important;
-    }
-
-    /* FORÇAR A TABELA DO CANVAS A ADOTAR FUNDO ROXO ESCURO */
-    div[data-testid="stDataFrame"], 
-    div[data-testid="stDataFrame"] > div, 
-    div[data-testid="stDataFrame"] [role="grid"],
-    div[data-testid="stDataFrame"] canvas,
-    div[data-testid="stDataFrame"] div {
-        background-color: #1a082e !important;
-        color: #ffffff !important;
     }
 
     /* Camada de clique transparente nos cards */
@@ -338,7 +371,6 @@ def eh_celular(numero_limpo):
     return False
 
 def extrair_datas_observacoes(texto_obs):
-    """Extrai todas as datas de contato no padrão [DD/MM/AAAA ...]"""
     if not texto_obs or not isinstance(texto_obs, str):
         return []
     padrao = r'\[(\d{2}/\d{2}/\d{4})'
@@ -507,7 +539,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         contatos_esta_semana = 0
 
     # ==========================================
-    # DASHBOARD DE MÉTRICAS 3D (COM 8 CARDS ALINHADOS)
+    # DASHBOARD DE MÉTRICAS 3D (COM 8 CARDS)
     # ==========================================
     c_t, c_nc, c_c, c_cf, c_conv, c_sem, c_pa, c_pn = st.columns(8)
     
@@ -773,7 +805,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         idx_status = STATUS_OFICIAIS.index(status_banco) if status_banco in STATUS_OFICIAIS else 0
         col_st, col_rp = st.columns(2)
         with col_st:
-            status_selecionado = st.selectbox("📌 Status de Evolução:", options=STATUS_OFICIAIS, index=idx_status, key=f"status_select\_{cnpj}")
+            status_selecionado = st.selectbox("📌 Status de Evolução:", options=STATUS_OFICIAIS, index=idx_status, key=f"status_select_{cnpj}")
         with col_rp:
             resp_banco = row.get('responsavel_tratamento', '') or ''
             idx_operador_atual = 0
@@ -786,15 +818,15 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 "👤 Atribuir Responsável:",
                 options=LISTA_OPERADORES_OFICIAIS,
                 index=idx_operador_atual,
-                key=f"resp_select\_{cnpj}"
+                key=f"resp_select_{cnpj}"
             )
 
         ticket_conversao = ""
         if status_selecionado == "Lead Convertido":
-            ticket_conversao = st.text_input("🎟️ Protocolo / Ticket CIEE:", placeholder="Ex: CIEE-SP-12345", key=f"ticket\_{cnpj}")
+            ticket_conversao = st.text_input("🎟️ Protocolo / Ticket CIEE:", placeholder="Ex: CIEE-SP-12345", key=f"ticket_{cnpj}")
         motivo_recusa_sel = ""
         if status_selecionado == "Proposta Negada":
-            motivo_recusa_sel = st.selectbox("❌ Principal Motivo da Recusa:", MOTIVOS_RECUSA_OPCOES, key=f"recusa\_{cnpj}")
+            motivo_recusa_sel = st.selectbox("❌ Principal Motivo da Recusa:", MOTIVOS_RECUSA_OPCOES, key=f"recusa_{cnpj}")
 
         st.markdown("📜 **Histórico de Interações:**")
         obs_banco = row.get('observacoes', '') or ''
@@ -803,7 +835,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         else:
             st.caption("Sem interações salvas.")
 
-        with st.form(f"form_tratamento\_{cnpj}"):
+        with st.form(f"form_tratamento_{cnpj}"):
             nova_nota = st.text_area(
                 "✍️ Registrar Detalhes de Nova Interação:",
                 placeholder="Anotar resumo de ligação, retorno, decisor contactado...",
@@ -825,7 +857,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                     carimbo_tempo = datetime.now().strftime("%d/%m/%Y %H:%M")
                     autor = novo_resp_selecionado or st.session_state["usuario_ativo"]
                     novo_bloco = f"[{carimbo_tempo} - {autor}]: {nova_nota.strip()}"
-                    base_obs = f"{novo_bloco}\\n{base_obs}".strip() if base_obs else novo_bloco
+                    base_obs = f"{novo_bloco}\n{base_obs}".strip() if base_obs else novo_bloco
                 obs_final = base_obs
                 if status_selecionado == "Lead Convertido" and ticket_conversao.strip():
                     registro_ticket = f"[TICKET: {ticket_conversao.strip()}]"
@@ -878,7 +910,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     """
     df_tabela = pd.read_sql(text(query_dados), engine, params=params)
 
-    # Filtragem em memória caso o usuário selecione filtro por período
+    # Filtragem em memória por período semanal
     if not df_tabela.empty and filtro_semana_sel != "Qualquer Período":
         def esta_no_periodo(obs):
             datas = extrair_datas_observacoes(obs)
@@ -907,7 +939,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             st.download_button(
                 label="📥 Exportar Dados Atuais (CSV)",
                 data=csv_data,
-                file_name=f"base_empresas_ciee_pag\_{pagina_atual}.csv",
+                file_name=f"base_empresas_ciee_pag_{pagina_atual}.csv",
                 mime="text/csv",
                 use_container_width=True
             )
