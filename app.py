@@ -49,7 +49,7 @@ st.markdown("""
     }
     
     .block-container {
-        padding-top: 0.6rem !important;
+        padding-top: 0.5rem !important;
         padding-bottom: 2.5rem !important;
         padding-left: 1.2rem !important;
         padding-right: 1.2rem !important;
@@ -61,6 +61,7 @@ st.markdown("""
         background: linear-gradient(180deg, #1E004A 0%, #31006F 100%) !important;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
+
     section[data-testid="stSidebar"] * {
         color: #F8FAFC !important;
     }
@@ -71,7 +72,7 @@ st.markdown("""
         border-radius: 10px !important;
     }
 
-    /* Hero Banner Superior (Estilo Expo CIEE Apps Script) */
+    /* Hero Banner Superior */
     .ciee-hero {
         background: linear-gradient(120deg, #240054 0%, #4A0E8F 50%, #005CB9 100%);
         border-radius: 16px;
@@ -316,7 +317,7 @@ MOTIVOS_RECUSA_OPCOES = [
 
 LISTA_OPERADORES_OFICIAIS = [
     "AGATHA CRUZ", "ALINE CRUZ", "ANY MORIMITSU", "BARBRA COSIELLO", "BRUNO SOUZA", 
-    "DIOGO VASCONCELOS", "DOUGLAS FRAGA", "ELAINE BORGES", "FABIANA LESSA MOLICA", 
+    "DIOGO OSVASCONCELOS", "DOUGLAS FRAGA", "ELAINE BORGES", "FABIANA LESSA MOLICA", 
     "ISABELLY NOGUEIRA", "ITALO BERTI", "JEFFERSON ANDRADE", "LUCIANA PINA", 
     "MATEUS LIMA", "MAYARA SOUZA", "RONALDO FERRAMOLA", "SANDRA MARA", 
     "TAINA ZANELLATO", "THAYNA CRUZ", "THAYNA IBRAIM", "VINICIUS RODRIGUES", 
@@ -326,8 +327,8 @@ LISTA_OPERADORES_OFICIAIS = [
 # ==========================================
 # 5. MENU LATERAL (NAVEGAÇÃO)
 # ==========================================
-st.sidebar.markdown("### 🏛️ Ecossistema CIEE")
-st.sidebar.caption("Painel Inteligente de Prospecção & Gestão de Parcerias SP")
+st.sidebar.markdown("### 🏢 Gestão CIEE")
+st.sidebar.caption("Painel Inteligente de Prospecção SP")
 
 aba_selecionada = st.sidebar.radio(
     "Módulo de Acesso:",
@@ -336,7 +337,7 @@ aba_selecionada = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### 👤 Identificação do Operador")
+st.sidebar.markdown("### 👤 Identificação")
 
 operador_logado = st.sidebar.selectbox(
     "Consultor(a) Ativo(a):",
@@ -366,7 +367,7 @@ def get_responsaveis_cadastrados():
 
 lista_responsaveis_filtro = get_responsaveis_cadastrados()
 
-# Hero Banner Superior (Estilo Web App Apps Script)
+# Hero Banner Superior
 subtitulo_topo = "Mapeamento Operacional de Empresas • Receita Federal SP" if aba_selecionada == "🔍 Prospecção de Leads" else "Painel Executivo de Acompanhamento, Eficiência Comercial e Diagnóstico de Recusas"
 st.markdown(f"""
     <div class="ciee-hero">
@@ -392,6 +393,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     if "filtro_status_clique" not in st.session_state:
         st.session_state["filtro_status_clique"] = "Todos"
 
+    # Consulta dos KPIs Gerais
     query_kpis_geral = """
         SELECT 
             COUNT(*) AS total,
@@ -422,7 +424,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     pct = lambda val: (val / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
     status_atual = st.session_state["filtro_status_clique"]
 
-    # Função auxiliar para gerar o HTML do Card no padrão Apps Script
+    # Função auxiliar para renderizar Cards no padrão Web App CIEE
     def render_kpi_card(titulo, valor, percentual, cor_hex, bg_icone, emoji, ativo):
         cls_ativo = "card-kpi-ativo" if ativo else ""
         largura_barra = min(max(percentual, 4.0), 100.0)
@@ -445,9 +447,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             </div>
         """
 
-    # ==========================================
-    # DASHBOARD EXECUTIVO CLICÁVEL (NO TOPO)
-    # ==========================================
+    # Dashboard Clicável
     c_t, c_nc, c_c, c_cf, c_conv, c_pa, c_pn = st.columns(7)
 
     with c_t:
@@ -494,9 +494,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
 
     st.caption("👆 **Filtro Interativo:** Clique diretamente sobre qualquer card acima para filtrar a listagem de empresas.")
 
-    # ==========================================
-    # FILTROS DE BUSCA (ABAIXO DO DASHBOARD)
-    # ==========================================
+    # Filtros de Busca
     with st.expander("🔍 FILTROS AVANÇADOS E SEGMENTAÇÃO", expanded=True):
         col_f1, col_f2, col_f3, col_f4 = st.columns(4)
         with col_f1:
@@ -532,6 +530,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
 
     offset_val = (pagina_atual - 1) * registros_por_pagina
 
+    # Montagem do WHERE SQL
     where_clauses = ["1=1"]
     params = {}
 
@@ -624,9 +623,9 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         maps_link = f"https://www.google.com/maps/search/?api=1&query={query_maps}"
 
         st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%); border: 1px solid #E2E8F0; border-left: 5px solid #FF5F00; border-radius: 12px; padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-                <div style="font-size: 18px; font-weight: 800; color: #31006F; margin-bottom: 10px;">🏢 {nome_exibicao}</div>
-                <div style="font-size: 13px; color: #334155; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-left: 5px solid #FF5F00; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                <div style="font-size: 17px; font-weight: 800; color: #31006F; margin-bottom: 8px;">🏢 {nome_exibicao}</div>
+                <div style="font-size: 13px; color: #334155; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                     <div><b>Razão Social:</b> {row.get('razao_social', '-')}</div>
                     <div><b>CNPJ Completo:</b> <code style="background-color: #EFF6FF; color: #005CB9; font-weight: 800; padding: 3px 8px; border-radius: 6px;">{cnpj_completo_exibicao}</code></div>
                     <div><b>Porte:</b> {row.get('porte_empresa', 'Não Informado')}</div>
@@ -712,7 +711,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                     carimbo_tempo = datetime.now().strftime("%d/%m/%Y %H:%M")
                     autor = novo_resp_selecionado or st.session_state["usuario_ativo"]
                     novo_bloco = f"[{carimbo_tempo} - {autor}]: {nova_nota.strip()}"
-                    base_obs = f"{novo_bloco}\n{base_obs}".strip() if base_obs else novo_bloco
+                    base_obs = f"{novo_bloco}\\n{base_obs}".strip() if base_obs else novo_bloco
 
                 obs_final = base_obs
                 if status_selecionado == "Lead Convertido" and ticket_conversao.strip():
@@ -727,13 +726,13 @@ if aba_selecionada == "🔍 Prospecção de Leads":
 
                 try:
                     with engine.begin() as conn:
-                        conn.execute(text("""
+                        conn.execute(text(\"\"\"
                             UPDATE empresas 
                             SET responsavel_tratamento = :resp,
                                 status_followup = :stat,
                                 observacoes = :obs
                             WHERE cnpj_formatado = :cnpj
-                        """), {
+                        \"\"\"), {
                             "resp": novo_resp_selecionado,
                             "stat": status_selecionado,
                             "obs": obs_final,
@@ -748,7 +747,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # ==========================================
     # TABELA PRINCIPAL DE EMPRESAS (RELAÇÃO)
     # ==========================================
-    query_dados = f"""
+    query_dados = f\"\"\"
         SELECT 
             cnpj_formatado, razao_social, nome_fantasia, porte_empresa,
             CASE 
@@ -765,14 +764,15 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             CASE WHEN (razao_social ILIKE '%comercio%' OR razao_social ILIKE '%varejo%' OR nome_fantasia ILIKE '%loja%') THEN 0 ELSE 1 END,
             cnpj_formatado
         LIMIT {registros_por_pagina} OFFSET {offset_val}
-    """
+    \"\"\"
 
     df_tabela = pd.read_sql(text(query_dados), engine, params=params)
 
-    col_titulo_tab, col_export = st.columns()
+    # CORREÇÃO DO ERRO st.columns() - PASSAMOS LARGURAS EXPLICITAS [3, 2]
+    col_titulo_tab, col_export = st.columns([3, 2])
     with col_titulo_tab:
-        status_indicador = f" • Filtro ativo: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
-        st.markdown(f"#### 📋 Relação de Empresas ({fmt_num(total_filtrado)} CNPJs localizados{status_indicador})")
+        status_indicator = f" • Filtro ativo: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
+        st.markdown(f"#### 📋 Relação de Empresas ({fmt_num(total_filtrado)} CNPJs localizados{status_indicator})")
 
     with col_export:
         if not df_tabela.empty:
@@ -788,6 +788,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     if df_tabela.empty:
         st.info("Nenhuma empresa encontrada com os parâmetros informados.")
     else:
+        # Tabela totalmente limpa sem Responsável, Status e Observações
         colunas_exibicao = [
             'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
             'segmentacao', 'setor_tipo', 'bairro', 'cep'
@@ -847,7 +848,7 @@ else:
     total_negados_rel = int(df_gestao[df_gestao["status_followup"] == "Proposta Negada"]["total"].sum()) if not df_gestao.empty else 0
     taxa_eficiencia_global = (total_conv_ativos / total_abordados * 100) if total_abordados > 0 else 0.0
 
-    # Big Numbers Executivos no Topo do Relatório
+    # Big Numbers Executivos
     m1, m2, m3, m4 = st.columns(4)
     with m1:
         st.markdown(f"""
@@ -857,6 +858,7 @@ else:
                 <div class="kpi-sub">Leads com atuação registrada</div>
             </div>
         """, unsafe_allow_html=True)
+
     with m2:
         st.markdown(f"""
             <div class="report-panel" style="border-top: 4px solid #059669; padding: 16px;">
@@ -882,7 +884,7 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-    col_g1, col_g2 = st.columns()
+    col_g1, col_g2 = st.columns(2)
 
     with col_g1:
         st.markdown("""
@@ -894,7 +896,7 @@ else:
         """, unsafe_allow_html=True)
 
         if not df_gestao.empty:
-            df_ranking = df_gestao.groupby("responsavel").agg(
+            df_ranking = df_gestao.groupby("Responsável").agg(
                 Contatos_Realizados=("total", "sum"),
                 Convertidos=("total", lambda x: sum(df_gestao.loc[x.index, "total"][df_gestao.loc[x.index, "status_followup"].isin(["Lead Convertido", "Parceiro Ativo"])])),
                 Em_Negociacao=("total", lambda x: sum(df_gestao.loc[x.index, "total"][df_gestao.loc[x.index, "status_followup"].isin(["Lead Contatado", "Contato Futuro"])]))
@@ -908,7 +910,7 @@ else:
 
             medalhas = ["🥇 ", "🥈 ", "🥉 "]
             df_ranking["Consultor(a)"] = [
-                f"{medalhas[i] if i < 3 else f'{i+1}º • '}{row['responsavel']}"
+                f"{medalhas[i] if i < 3 else f'{i+1}º • '}{row['Responsável']}"
                 for i, row in df_ranking.iterrows()
             ]
 
@@ -951,7 +953,7 @@ else:
                     <span style="font-size: 11px; color: #DC2626; font-weight: 700;">Programas CIEE</span>
                 </div>
         """
-        for motivo, qtd in sorted(motivos_contagem.items(), key=lambda x: x, reverse=True):
+        for motivo, qtd in sorted(motivos_contagem.items(), key=lambda x: x[1], reverse=True):
             pct_m = (qtd / total_motivos * 100) if total_motivos > 0 else 0.0
             larg_m = max(pct_m, 3.0) if qtd > 0 else 0.0
             html_recusas += f"""
@@ -968,7 +970,7 @@ else:
         html_recusas += "</div>"
         st.markdown(html_recusas, unsafe_allow_html=True)
 
-        # Evolução do Pipeline por Etapa
+        # Evolução do Pipeline
         html_funil = """
             <div class="report-panel">
                 <div class="report-panel-title">
