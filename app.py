@@ -93,7 +93,7 @@ st.markdown("""
         box-shadow: 0 0 8px #FF5F00;
     }
 
-    /* Estrutura do Card KPI Visual */
+    /* Cards KPI com Efeito Clicável Dinâmico */
     .card-kpi {
         background-color: #FFFFFF;
         border: 1px solid #E2E8F0;
@@ -143,8 +143,8 @@ st.markdown("""
         color: #94A3B8;
     }
 
-    /* Botão Padrão Laranja CIEE (dentro de modais e forms) */
-    .stFormSubmitButton button {
+    /* Botão Padrão de Ações */
+    .stFormSubmitButton button, .stDownloadButton button {
         background-color: #FF5F00 !important;
         color: #FFFFFF !important;
         border: none !important;
@@ -152,7 +152,7 @@ st.markdown("""
         font-weight: 700 !important;
     }
 
-    /* Camada invisível que torna o Card HTML 100% clicável sem mostrar botão abaixo */
+    /* Camada invisível que permite clicar no Card HTML */
     div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton {
         margin-top: -96px !important;
         height: 96px !important;
@@ -318,7 +318,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     status_atual = st.session_state["filtro_status_clique"]
 
     # ==========================================
-    # DASHBOARD DIRETO NO CARD (SEM BOTÕES VISÍVEIS EMBAIXO)
+    # DASHBOARD DIRETO NO CARD (CLIQUE DIRETO NO CARD)
     # ==========================================
     c_t, c_nc, c_c, c_cf, c_conv, c_pa, c_pn = st.columns(7)
 
@@ -371,7 +371,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             st.session_state["filtro_status_clique"] = "Proposta Negada"
             st.rerun()
 
-    st.caption("👆 **Dica:** Clique diretamente sobre qualquer card acima para filtrar a relação de empresas instantaneamente.")
+    st.caption("👆 **Dica:** Clique em qualquer card para filtrar a relação instantaneamente.")
 
     # ==========================================
     # FILTROS DE BUSCA (ABAIXO DO DASHBOARD)
@@ -465,7 +465,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
 
     sql_where = " WHERE " + " AND ".join(where_clauses)
 
-    # Contagem de total filtrado
     query_count = f"SELECT COUNT(*) as total FROM empresas {sql_where}"
     try:
         with engine.connect() as conn:
@@ -629,6 +628,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # ==========================================
     # TABELA PRINCIPAL DE EMPRESAS (RELAÇÃO)
     # ==========================================
+    # Observações, Responsável e Status retirados da tela inicial
     query_dados = f"""
         SELECT 
             cnpj_formatado, razao_social, nome_fantasia, porte_empresa,
@@ -640,8 +640,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 WHEN razao_social ILIKE '%publica%' OR razao_social ILIKE '%prefeitura%' OR razao_social ILIKE '%municip%' OR razao_social ILIKE '%federal%' THEN 'Público'
                 ELSE 'Privado'
             END AS setor_tipo,
-            COALESCE(bairro, 'Não Informado') AS bairro, cep,
-            COALESCE(observacoes, '') AS observacoes
+            COALESCE(bairro, 'Não Informado') AS bairro, cep
         FROM empresas {sql_where}
         ORDER BY 
             CASE WHEN (razao_social ILIKE '%comercio%' OR razao_social ILIKE '%varejo%' OR nome_fantasia ILIKE '%loja%') THEN 0 ELSE 1 END,
@@ -651,7 +650,8 @@ if aba_selecionada == "🔍 Prospecção de Leads":
 
     df_tabela = pd.read_sql(text(query_dados), engine, params=params)
 
-    col_titulo_tab, col_export = st.columns([4, 1])
+    # Barra superior da tabela com título e Botão de Exportação em destaque
+    col_titulo_tab, col_export = st.columns([3, 2])
     with col_titulo_tab:
         status_indicador = f" • Filtro ativo: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
         st.markdown(f"#### 📋 Relação de Empresas ({fmt_num(total_filtrado)} CNPJs localizados{status_indicador})")
@@ -660,9 +660,9 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         if not df_tabela.empty:
             csv_data = df_tabela.to_csv(index=False).encode("utf-8-sig")
             st.download_button(
-                label="📥 Exportar Página (CSV)",
+                label="📥 Exportar Base Atual (CSV)",
                 data=csv_data,
-                file_name=f"leads_ciee_pag_{pagina_atual}.csv",
+                file_name=f"base_empresas_ciee_pag_{pagina_atual}.csv",
                 mime="text/csv",
                 use_container_width=True
             )
@@ -670,13 +670,15 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     if df_tabela.empty:
         st.info("Nenhuma empresa encontrada com os parâmetros informados.")
     else:
+        # Colunas exibidas: Sem Responsável, Sem Status e Sem Observações (Totalmente limpa)
         colunas_exibicao = [
             'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
-            'segmentacao', 'setor_tipo', 'bairro', 'cep', 'observacoes'
+            'segmentacao', 'setor_tipo', 'bairro', 'cep'
         ]
 
-        st.caption("👉 **Clique na linha da empresa** para abrir a ficha de prospecção.")
+        st.caption("👉 **Clique em qualquer linha da tabela** para abrir a ficha de prospecção e registrar atendimentos.")
 
+        # Evento de seleção com chave de sessão garantida
         event = st.dataframe(
             df_tabela[colunas_exibicao],
             column_config={
@@ -687,15 +689,16 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 "segmentacao": "Segmentação",
                 "setor_tipo": "Tipo de Setor",
                 "bairro": "Bairro",
-                "cep": "CEP",
-                "observacoes": "Observações / Histórico"
+                "cep": "CEP"
             },
             hide_index=True,
             use_container_width=True,
             on_select="rerun",
-            selection_mode="single-row"
+            selection_mode="single-row",
+            key="tabela_leads"
         )
 
+        # Dispara a abertura do modal ao selecionar qualquer linha
         if event and event.selection and event.selection.rows:
             idx_selecionado = event.selection.rows[0]
             cnpj_clicado = df_tabela.iloc[idx_selecionado]['cnpj_formatado']
