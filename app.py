@@ -13,7 +13,6 @@ st.set_page_config(
 )
 
 # Conexão com o banco NeonDB
-# Dica de segurança: Configure 'st.secrets["POSTGRES_URI"]' no Streamlit Cloud
 POSTGRES_URI = "postgresql+psycopg2://neondb_owner:npg_bNDxjo9L2giC@ep-empty-hall-b4zx7bew-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
 @st.cache_resource
@@ -27,7 +26,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# FUNÇÃO DE FORMATAÇÃO NUMÉRICA (PADRÃO BR)
+# FORMATAÇÃO NUMÉRICA (PADRÃO BR)
 # ==========================================
 def fmt_num(val):
     if val is None:
@@ -35,105 +34,207 @@ def fmt_num(val):
     return f"{int(val):,}".replace(",", ".")
 
 # ==========================================
-# ESTILIZAÇÃO CSS CUSTOMIZADA
+# TEMA DARK NEON ROXO (INSPIRADO NA REFERÊNCIA)
 # ==========================================
 st.markdown("""
     <style>
+    /* Ocultar barra superior padrão do Streamlit */
     header {visibility: hidden;}
     [data-testid="collapsedControl"] {display: none;}
+    
+    /* Fundo da aplicação */
+    .stApp {
+        background-color: #120722;
+        color: #f1f5f9;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    
     .block-container {
-        padding-top: 1rem;
-        padding-bottom: 2rem;
+        padding-top: 1.2rem;
+        padding-bottom: 3rem;
+        max-width: 98%;
     }
 
-    /* Barra Superior Corporativa */
-    .top-header {
-        background: linear-gradient(90deg, #4A154B 0%, #300A32 100%);
-        padding: 14px 24px;
-        border-radius: 8px;
+    /* Topo com gradiente escuro */
+    .neon-top-bar {
+        background: linear-gradient(135deg, #270d47 0%, #150929 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 18px 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        color: white;
         margin-bottom: 20px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
-    .top-title {
-        font-size: 20px;
+    .neon-top-title {
+        font-size: 22px;
         font-weight: 800;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.8px;
+        color: #ffffff;
+        text-transform: uppercase;
         display: flex;
         align-items: center;
         gap: 12px;
     }
-    .badge-user {
-        background-color: #ffffff;
-        color: #4A154B;
-        font-size: 12px;
-        font-weight: 700;
-        padding: 4px 12px;
+    .neon-badge-live {
+        background-color: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        padding: 6px 14px;
         border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #4ade80;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #4ade80;
     }
 
-    /* Cards de Indicadores */
-    .metric-card {
-        background-color: #ffffff;
-        border-radius: 10px;
-        padding: 14px 18px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-        border-top: 4px solid #6c757d;
-        margin-bottom: 12px;
+    /* Cards de Indicadores Estilo Dashboard Neon */
+    .kpi-card {
+        border-radius: 14px;
+        padding: 16px 18px;
+        min-height: 120px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .card-total { border-top-color: #4A154B; }
-    .card-nao-contatado { border-top-color: #64748b; }
-    .card-contatado { border-top-color: #0284c7; }
-    .card-futuro { border-top-color: #eab308; }
-    .card-convertido { border-top-color: #16a34a; }
-    .card-ativo { border-top-color: #10b981; }
-    .card-negado { border-top-color: #dc2626; }
+    .kpi-card:hover {
+        transform: translateY(-2px);
+    }
 
-    .card-title {
+    /* Cores gradientes específicas dos Cards */
+    .kpi-total {
+        background: linear-gradient(135deg, #a855f7 0%, #6b21a8 100%);
+        color: #ffffff;
+    }
+    .kpi-nao-contatado {
+        background: linear-gradient(135deg, #2b134d 0%, #1c0c33 100%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #cbd5e1;
+    }
+    .kpi-contatado {
+        background: linear-gradient(135deg, #0284c7 0%, #034870 100%);
+        color: #ffffff;
+    }
+    .kpi-futuro {
+        background: linear-gradient(135deg, #ca8a04 0%, #713f12 100%);
+        color: #ffffff;
+    }
+    .kpi-convertido {
+        background: linear-gradient(135deg, #15803d 0%, #064e3b 100%);
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        color: #ffffff;
+    }
+    .kpi-ativo {
+        background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+        color: #ffffff;
+    }
+    .kpi-negado {
+        background: linear-gradient(135deg, #be123c 0%, #881337 100%);
+        color: #ffffff;
+    }
+
+    .kpi-title {
         font-size: 11px;
         font-weight: 700;
-        color: #64748b;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.6px;
+        opacity: 0.85;
     }
-    .card-value {
-        font-size: 22px;
-        font-weight: 800;
-        margin: 4px 0;
+    .kpi-value {
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: -0.5px;
+        line-height: 1.1;
+        margin: 6px 0;
     }
-    .val-total { color: #4A154B; }
-    .val-nao-contatado { color: #64748b; }
-    .val-contatado { color: #0284c7; }
-    .val-futuro { color: #ca8a04; }
-    .val-convertido { color: #16a34a; }
-    .val-ativo { color: #10b981; }
-    .val-negado { color: #dc2626; }
+    .kpi-sub {
+        font-size: 12px;
+        opacity: 0.75;
+    }
 
-    .card-sub {
-        font-size: 11px;
-        color: #94a3b8;
+    /* Card informativo de resumo de texto */
+    .neon-summary-bar {
+        background: #1c0e35;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-left: 4px solid #a855f7;
+        padding: 14px 20px;
+        border-radius: 10px;
+        margin: 18px 0;
+        font-size: 14px;
+        color: #e2e8f0;
+    }
+
+    /* Container de Expander dos Filtros */
+    div[data-testid="stExpander"] {
+        background-color: #1a0b30 !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+        color: white !important;
+    }
+    div[data-testid="stExpander"] summary {
+        color: #f8fafc !important;
+        font-weight: 700 !important;
+    }
+
+    /* Customização dos Inputs */
+    .stTextInput input, .stSelectbox [data-baseweb="select"], .stNumberInput input {
+        background-color: #240e42 !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 8px !important;
+    }
+    .stTextInput label, .stSelectbox label, .stNumberInput label {
+        color: #cbd5e1 !important;
+        font-weight: 600 !important;
+        font-size: 12px !important;
+    }
+    
+    /* Botões */
+    .stButton button {
+        background: linear-gradient(90deg, #9333ea 0%, #7e22ce 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        padding: 8px 16px !important;
+        box-shadow: 0 4px 14px rgba(147, 51, 234, 0.4) !important;
+    }
+    .stButton button:hover {
+        background: linear-gradient(90deg, #a855f7 0%, #9333ea 100%) !important;
+        transform: translateY(-1px);
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Topo Corporativo
+# ==========================================
+# HEADER PRINCIPAL
+# ==========================================
 st.markdown("""
-    <div class="top-header">
-        <div class="top-title">
-            <span>🏛️ PROSPECÇÃO DE CNPJs</span>
-            <span style="font-size: 15px; font-weight: 400; opacity: 0.85;">| Base Operacional de Leads</span>
+    <div class="neon-top-bar">
+        <div class="neon-top-title">
+            <span>PAINEL DE PROSPECÇÃO DE CNPJS</span>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <span class="badge-user">Operação Ativa</span>
-            <span style="font-size: 13px; opacity: 0.9;">Equipe Comercial</span>
+        <div class="neon-badge-live">
+            <span class="live-dot"></span>
+            <span>Operação Ativa</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# LISTA OFICIAL DE STATUS
+# STATUS OFICIAIS
 # ==========================================
 STATUS_OFICIAIS = [
     "Lead Não Contatado",
@@ -225,7 +326,7 @@ if busca_texto.strip():
 
 sql_where = " WHERE " + " AND ".join(where_clauses)
 
-# Consulta de KPIs com a nova taxonomia
+# Consulta de KPIs
 query_kpis = f"""
     SELECT 
         COUNT(*) AS total,
@@ -255,74 +356,81 @@ qtd_negados = kpi_res.negados or 0
 pct = lambda val: (val / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
 
 # ==========================================
-# CARDS DE INDICADORES
+# CARDS DE INDICADORES (GRADIENTE NEON)
 # ==========================================
 c_t, c_nc, c_c, c_cf, c_conv, c_pa, c_pn = st.columns(7)
 
 with c_t:
     st.markdown(f"""
-        <div class="metric-card card-total">
-            <div class="card-title">Total Base</div>
-            <div class="card-value val-total">{fmt_num(total_cnpjs)}</div>
-            <div class="card-sub">CNPJs Filtrados</div>
+        <div class="kpi-card kpi-total">
+            <div class="kpi-title">Total Base</div>
+            <div class="kpi-value">{fmt_num(total_cnpjs)}</div>
+            <div class="kpi-sub">CNPJs Filtrados</div>
         </div>
     """, unsafe_allow_html=True)
 
 with c_nc:
     st.markdown(f"""
-        <div class="metric-card card-nao-contatado">
-            <div class="card-title">Não Contatados</div>
-            <div class="card-value val-nao-contatado">{fmt_num(qtd_nao_contatados)}</div>
-            <div class="card-sub">{pct(qtd_nao_contatados):.1f}% do total</div>
+        <div class="kpi-card kpi-nao-contatado">
+            <div class="kpi-title">Não Contatados</div>
+            <div class="kpi-value">{fmt_num(qtd_nao_contatados)}</div>
+            <div class="kpi-sub">{pct(qtd_nao_contatados):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
 
 with c_c:
     st.markdown(f"""
-        <div class="metric-card card-contatado">
-            <div class="card-title">Contatados</div>
-            <div class="card-value val-contatado">{fmt_num(qtd_contatados)}</div>
-            <div class="card-sub">{pct(qtd_contatados):.1f}% do total</div>
+        <div class="kpi-card kpi-contatado">
+            <div class="kpi-title">Contatados</div>
+            <div class="kpi-value">{fmt_num(qtd_contatados)}</div>
+            <div class="kpi-sub">{pct(qtd_contatados):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
 
 with c_cf:
     st.markdown(f"""
-        <div class="metric-card card-futuro">
-            <div class="card-title">Contato Futuro</div>
-            <div class="card-value val-futuro">{fmt_num(qtd_futuros)}</div>
-            <div class="card-sub">{pct(qtd_futuros):.1f}% do total</div>
+        <div class="kpi-card kpi-futuro">
+            <div class="kpi-title">Contato Futuro</div>
+            <div class="kpi-value">{fmt_num(qtd_futuros)}</div>
+            <div class="kpi-sub">{pct(qtd_futuros):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
 
 with c_conv:
     st.markdown(f"""
-        <div class="metric-card card-convertido">
-            <div class="card-title">Convertidos</div>
-            <div class="card-value val-convertido">{fmt_num(qtd_convertidos)}</div>
-            <div class="card-sub">{pct(qtd_convertidos):.1f}% do total</div>
+        <div class="kpi-card kpi-convertido">
+            <div class="kpi-title">Convertidos</div>
+            <div class="kpi-value">{fmt_num(qtd_convertidos)}</div>
+            <div class="kpi-sub">{pct(qtd_convertidos):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
 
 with c_pa:
     st.markdown(f"""
-        <div class="metric-card card-ativo">
-            <div class="card-title">Parceiro Ativo</div>
-            <div class="card-value val-ativo">{fmt_num(qtd_ativos)}</div>
-            <div class="card-sub">{pct(qtd_ativos):.1f}% do total</div>
+        <div class="kpi-card kpi-ativo">
+            <div class="kpi-title">Parceiro Ativo</div>
+            <div class="kpi-value">{fmt_num(qtd_ativos)}</div>
+            <div class="kpi-sub">{pct(qtd_ativos):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
 
 with c_pn:
     st.markdown(f"""
-        <div class="metric-card card-negado">
-            <div class="card-title">Proposta Negada</div>
-            <div class="card-value val-negado">{fmt_num(qtd_negados)}</div>
-            <div class="card-sub">{pct(qtd_negados):.1f}% do total</div>
+        <div class="kpi-card kpi-negado">
+            <div class="kpi-title">Proposta Negada</div>
+            <div class="kpi-value">{fmt_num(qtd_negados)}</div>
+            <div class="kpi-sub">{pct(qtd_negados):.1f}% da base</div>
         </div>
     """, unsafe_allow_html=True)
 
-st.markdown("---")
+# Faixa de resumo textual (como na referência)
+st.markdown(f"""
+    <div class="neon-summary-bar">
+        Dos <b>{fmt_num(total_cnpjs)}</b> CNPJs filtrados, <b>{fmt_num(qtd_nao_contatados)}</b> ainda aguardam primeiro contato.
+        Já foram abordados <b>{fmt_num(qtd_contatados + qtd_futuros + qtd_convertidos + qtd_ativos + qtd_negados)}</b> leads,
+        resultando em <b>{fmt_num(qtd_convertidos)}</b> conversões diretas e <b>{fmt_num(qtd_ativos)}</b> parceiros ativos na base.
+    </div>
+""", unsafe_allow_html=True)
 
 # ==========================================
 # CONSULTA PAGINADA
@@ -357,20 +465,22 @@ def formatar_telefone(row):
 
 if not df_tabela.empty:
     df_tabela['telefone_completo'] = df_tabela.apply(formatar_telefone, axis=1)
-    df_tabela['correio_eletronico'] = df_tabela['correio_eletronico'].apply(lambda x: x if x and str(x).strip() not in ['nan', 'None', ''] else "Não informado")
+    df_tabela['correio_eletronico'] = df_tabela['correio_eletronico'].apply(
+        lambda x: x if x and str(x).strip() not in ['nan', 'None', ''] else "Não informado"
+    )
 else:
     df_tabela['telefone_completo'] = []
 
 # ==========================================
 # JANELA MODAL DE TRATAMENTO / FOLLOW-UP
 # ==========================================
-@st.dialog("📝 Atualizar Follow-up da Empresa", width="large")
+@st.dialog("📝 Tratar Prospecção", width="large")
 def abrir_modal_tratamento(cnpj):
     query_emp = "SELECT * FROM empresas WHERE cnpj_formatado = :cnpj"
     res_df = pd.read_sql(text(query_emp), engine, params={"cnpj": cnpj})
     
     if res_df.empty:
-        st.error("Empresa não encontrada.")
+        st.error("Empresa não localizada.")
         return
 
     row = res_df.iloc[0]
@@ -381,13 +491,13 @@ def abrir_modal_tratamento(cnpj):
     email_fmt = row.get('correio_eletronico') or "Não informado"
     nome_exibicao = row.get('nome_fantasia') if row.get('nome_fantasia') and str(row.get('nome_fantasia')).strip() not in ['nan', 'None', ''] else row.get('razao_social')
 
-    # Cartão de Informações Básicas da Empresa
+    # Card escuro dentro da modal
     st.markdown(f"""
-        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 15px;">
-            <div style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">🏢 {nome_exibicao}</div>
-            <div style="font-size: 13px; color: #475569; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div style="background: linear-gradient(135deg, #1f0b3b 0%, #130726 100%); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 16px; margin-bottom: 15px; color: #f1f5f9;">
+            <div style="font-size: 17px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">🏢 {nome_exibicao}</div>
+            <div style="font-size: 13px; color: #cbd5e1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                 <div><b>Razão Social:</b> {row.get('razao_social', '-')}</div>
-                <div><b>CNPJ:</b> <code>{row.get('cnpj_formatado', '-')}</code></div>
+                <div><b>CNPJ:</b> <code style="background-color: #2e1055; color: #38bdf8; padding: 2px 6px; border-radius: 4px;">{row.get('cnpj_formatado', '-')}</code></div>
                 <div><b>Porte:</b> {row.get('porte_empresa', 'Não Informado')}</div>
                 <div><b>Telefone:</b> {tel_fmt}</div>
                 <div style="grid-column: span 2;"><b>E-mail:</b> {email_fmt}</div>
@@ -395,12 +505,11 @@ def abrir_modal_tratamento(cnpj):
         </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("##### Ação de Atendimento")
+    st.markdown("##### Atualização de Follow-up")
     
     status_banco = row.get('status_followup', '')
     idx_status = STATUS_OFICIAIS.index(status_banco) if status_banco in STATUS_OFICIAIS else 0
 
-    # Usamos session_state para permitir renderização reativa do campo de Ticket
     status_selecionado = st.selectbox(
         "📌 Status do Follow-up:",
         options=STATUS_OFICIAIS,
@@ -434,7 +543,6 @@ def abrir_modal_tratamento(cnpj):
         btn_salvar = st.form_submit_button("💾 Salvar Tratamento", use_container_width=True)
         
         if btn_salvar:
-            # Se for convertido e preencheu ticket, garante o registro na observação
             obs_final = obs_nova
             if status_selecionado == "Lead Convertido" and ticket_conversao.strip():
                 registro_ticket = f"[TICKET: {ticket_conversao.strip()}]"
@@ -443,7 +551,6 @@ def abrir_modal_tratamento(cnpj):
 
             try:
                 with engine.begin() as conn:
-                    # Tenta atualizar com o campo ticket_conversao caso a coluna exista
                     try:
                         conn.execute(text("""
                             UPDATE empresas 
@@ -460,7 +567,6 @@ def abrir_modal_tratamento(cnpj):
                             "cnpj": cnpj
                         })
                     except Exception:
-                        # Fallback se a coluna ticket_conversao ainda não foi criada no banco
                         conn.execute(text("""
                             UPDATE empresas 
                             SET responsavel_tratamento = :resp,
@@ -477,12 +583,12 @@ def abrir_modal_tratamento(cnpj):
                 st.success("✅ Follow-up salvo com sucesso!")
                 st.rerun()
             except Exception as err:
-                st.error(f"Erro ao atualizar dados: {err}")
+                st.error(f"Erro ao salvar: {err}")
 
 # ==========================================
-# SEÇÃO DA TABELA
+# RELAÇÃO DE EMPRESAS
 # ==========================================
-st.subheader(f"📋 Relação de Empresas ({fmt_num(total_cnpjs)} CNPJs localizados)")
+st.markdown(f"#### 📋 Relação de Empresas ({fmt_num(total_cnpjs)} CNPJs localizados)")
 
 if df_tabela.empty:
     st.info("Nenhuma empresa encontrada com os parâmetros informados.")
@@ -495,7 +601,7 @@ else:
 
     st.caption("👉 **Dica:** Clique em qualquer linha para abrir a janela de tratamento do Lead.")
 
-    # Tabela com seleção interativa de linha
+    # Dataframe escuro com seleção de linha
     event = st.dataframe(
         df_tabela[colunas_exibicao],
         column_config={
@@ -517,7 +623,6 @@ else:
         selection_mode="single-row"
     )
 
-    # Dispara o pop-up ao clicar na linha
     if event and event.selection and event.selection.rows:
         idx_selecionado = event.selection.rows[0]
         cnpj_clicado = df_tabela.iloc[idx_selecionado]['cnpj_formatado']
