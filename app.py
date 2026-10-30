@@ -33,7 +33,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. IDENTIDADE VISUAL 3D NEON GLASSMORPHISM (CSS)
+# 3. IDENTIDADE VISUAL EXPO CIEE (CSS COMPLETO AJUSTADO)
 # ==========================================
 st.markdown("""
     <style>
@@ -42,34 +42,34 @@ st.markdown("""
     header {visibility: hidden;}
     [data-testid="collapsedControl"] {display: block;}
     
-    /* Reset e Fundo Deep Dark (Inspirado na imagem) */
+    /* Fundo roxo ligeiramente mais claro e vibrante para fluidez */
     .stApp {
-        background-color: #0d041e !important;
-        background-image: radial-gradient(circle at 50% 0%, #200543 0%, #0d041e 70%) !important;
+        background-color: #1a082e !important;
+        background-image: radial-gradient(circle at 50% 0%, #321054 0%, #1a082e 100%) !important;
         color: #F8FAFC !important;
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
     
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 0.5rem !important;
         padding-bottom: 2.5rem !important;
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
         max-width: 100% !important;
     }
 
-    /* Sidebar Estilizada Dark */
+    /* Sidebar Dark CIEE */
     section[data-testid="stSidebar"] {
-        background-color: #0b021a !important;
+        background-color: #120422 !important;
         border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
     section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label {
         color: #E2E8F0 !important;
     }
 
-    /* Top Bar Executive (CIEE EXPO Style) */
+    /* Top Bar Executive (CIEE Colors) */
     .ciee-top-bar {
-        background: linear-gradient(135deg, #240054 0%, #4a0072 50%, #005cb9 100%);
+        background: linear-gradient(135deg, #0E0E76 0%, #8C0073 50%, #F76D4D 100%);
         border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 16px;
         padding: 20px 26px;
@@ -89,12 +89,12 @@ st.markdown("""
         font-weight: 800;
         letter-spacing: -0.5px;
         color: #FFFFFF;
-        text-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
     .ciee-subtitle {
         font-size: 13px;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.8);
+        color: rgba(255, 255, 255, 0.9);
     }
     .ciee-badge-live {
         background: rgba(255, 255, 255, 0.1);
@@ -109,7 +109,6 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     .live-dot {
         width: 8px;
@@ -119,51 +118,41 @@ st.markdown("""
         box-shadow: 0 0 10px #10B981;
     }
 
-    /* Cards KPI com Efeito 3D e Sombras profundas (Inspirado no Painel Expo) */
+    /* Cards KPI baseados nas cores solicitadas */
     .card-kpi {
-        background: rgba(25, 12, 48, 0.6) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        background: rgba(35, 15, 65, 0.7) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 16px;
         padding: 18px;
         height: 125px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.05);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.08);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         pointer-events: none;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    /* Efeito hover com luz interna nos cards */
-    div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton:hover + .card-kpi,
-    .card-kpi:hover {
-        transform: translateY(-4px);
-        border-color: rgba(255, 255, 255, 0.2) !important;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.15);
     }
 
-    /* Variações de gradientes brilhantes com luz interna 3D */
+    /* Gradientes utilizando especificamente sua paleta */
     .border-total { 
-        background: linear-gradient(135deg, #440c74 0%, #1a0336 100%) !important;
-        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        background: linear-gradient(135deg, #0E0E76 0%, #151552 100%) !important;
+        border: 1px solid rgba(14, 14, 118, 0.5) !important;
     }
     .border-nao-contatado { 
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
         border: 1px solid rgba(148, 163, 184, 0.3) !important;
     }
     .border-contatado { 
-        background: linear-gradient(135deg, #024794 0%, #081a3d 100%) !important;
-        border: 1px solid rgba(59, 130, 246, 0.4) !important;
+        background: linear-gradient(135deg, #8C0073 0%, #440138 100%) !important;
+        border: 1px solid rgba(140, 0, 115, 0.5) !important;
     }
     .border-futuro { 
-        background: linear-gradient(135deg, #5b137d 0%, #20042f 100%) !important;
-        border: 1px solid rgba(216, 180, 254, 0.4) !important;
+        background: linear-gradient(135deg, #D02560 0%, #610d2b 100%) !important;
+        border: 1px solid rgba(208, 37, 96, 0.5) !important;
     }
     .border-convertido { 
-        background: linear-gradient(135deg, #b23b00 0%, #3d1400 100%) !important;
-        border: 1px solid rgba(249, 115, 22, 0.5) !important;
+        background: linear-gradient(135deg, #F76D4D 0%, #7e2f1e 100%) !important;
+        border: 1px solid rgba(247, 109, 77, 0.5) !important;
     }
     .border-ativo { 
         background: linear-gradient(135deg, #055e3a 0%, #022014 100%) !important;
@@ -174,10 +163,10 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.5) !important;
     }
 
-    /* Efeito de Card Ativo Selecionado (Brilho Neon Orange ao redor) */
+    /* Card Selecionado com Borda Iluminada Laranja */
     .card-kpi-ativo {
-        border: 2px solid #FF5F00 !important;
-        box-shadow: 0 0 25px rgba(255, 95, 0, 0.55), inset 0 1px 3px rgba(255, 255, 255, 0.3) !important;
+        border: 2px solid #F76D4D !important;
+        box-shadow: 0 0 25px rgba(247, 109, 77, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.3) !important;
         transform: translateY(-3px);
     }
 
@@ -191,23 +180,21 @@ st.markdown("""
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        color: rgba(255, 255, 255, 0.75);
+        color: rgba(255, 255, 255, 0.85);
     }
     .kpi-icon {
         font-size: 14px;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.12);
         width: 26px;
         height: 26px;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: inset 0 1px 1px rgba(255,255,255,0.2);
     }
     .kpi-value {
         font-size: 26px;
         font-weight: 800;
-        letter-spacing: -0.5px;
         line-height: 1.1;
         margin: 6px 0 2px 0;
         color: #FFFFFF;
@@ -216,51 +203,72 @@ st.markdown("""
     .kpi-sub {
         font-size: 11px;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.6);
+        color: rgba(255, 255, 255, 0.65);
     }
 
-    /* Container de Filtros e Listagem (Glass Box) */
+    /* Containers de Filtro em Glassmorphism Escuro */
     div[data-testid="stExpander"], .section-header-bar {
-        background-color: rgba(20, 10, 38, 0.65) !important;
+        background-color: rgba(25, 12, 45, 0.75) !important;
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
         border-radius: 16px !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        padding: 10px !important;
-    }
-    .stExpander label, div[data-testid="stExpander"] p {
-        color: #E2E8F0 !important;
     }
 
-    /* Inputs Estilo Pill Dark */
+    /* Inputs Dark Customizados */
     .stTextInput input, .stSelectbox div[data-baseweb="select"] {
-        background-color: rgba(10, 4, 22, 0.8) !important;
+        background-color: rgba(12, 5, 25, 0.85) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         color: #FFFFFF !important;
         border-radius: 10px !important;
     }
-    .stTextInput input:focus {
-        border-color: #FF5F00 !important;
-        box-shadow: 0 0 10px rgba(255, 95, 0, 0.3) !important;
-    }
 
-    /* Botão Laranja CIEE Premium */
+    /* BOTÃO LARANJA PREMIUM DA SUA PALETA (#F76D4D) */
     .stFormSubmitButton button, .stDownloadButton button {
-        background: linear-gradient(135deg, #FF5F00 0%, #EA580C 100%) !important;
+        background: linear-gradient(135deg, #F76D4D 0%, #D02560 100%) !important;
         color: #FFFFFF !important;
         border: none !important;
         border-radius: 10px !important;
         font-weight: 700 !important;
-        box-shadow: 0 6px 20px rgba(255, 95, 0, 0.35), inset 0 1px 1px rgba(255,255,255,0.3) !important;
+        box-shadow: 0 6px 20px rgba(247, 109, 77, 0.35), inset 0 1px 1px rgba(255,255,255,0.3) !important;
         transition: all 0.2s ease !important;
     }
     .stFormSubmitButton button:hover, .stDownloadButton button:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 10px 25px rgba(255, 95, 0, 0.45), inset 0 1px 1px rgba(255,255,255,0.4) !important;
+        box-shadow: 0 10px 25px rgba(247, 109, 77, 0.45) !important;
     }
 
-    /* Camada invisível que permite clicar nos Cards em cima dos botões Streamlit */
+    /* ==========================================
+       TABELA PREMIUM ESCURA COM DIVISÓRIAS BRANCAS (Ref. Image 2)
+       ========================================== */
+    /* Sobrescreve o fundo cinza claro padrão do st.dataframe para roxo escuro unificado */
+    div[data-testid="stDataFrame"], 
+    div[data-testid="stDataFrame"] > div, 
+    div[data-testid="stDataFrame"] [role="grid"] {
+        background-color: #210d3a !important;
+        color: #ffffff !important;
+    }
+    
+    /* Cabeçalhos da tabela escuros com divisor */
+    div[data-testid="stDataFrame"] [role="columnheader"] {
+        background-color: #16072b !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.35) !important;
+    }
+
+    /* Customização fina das linhas e colunas com divisórias horizontais brancas suaves */
+    div[data-testid="stDataFrame"] [role="row"] {
+        background-color: #210d3a !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Ajuste de hover nas linhas da tabela */
+    div[data-testid="stDataFrame"] [role="row"]:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Camada para clique nos cards KPI */
     div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton {
         margin-top: -125px !important;
         height: 125px !important;
@@ -279,14 +287,6 @@ st.markdown("""
     }
     div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton button:hover {
         background: rgba(255, 255, 255, 0.03) !important;
-    }
-
-    /* Estilização Executiva do DataFrame para Dark Mode */
-    div[data-testid="stDataFrame"] {
-        background-color: rgba(15, 6, 30, 0.6) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        border-radius: 12px !important;
-        overflow: hidden;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -344,7 +344,7 @@ with st.sidebar:
             <div style="font-size: 20px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 10px;">
                 <span>🏛️</span> <span>CIEE B2B CRM</span>
             </div>
-            <div style="font-size: 11px; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 4px;">São Paulo • Prospecção</div>
+            <div style="font-size: 11px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 4px;">São Paulo • Prospecção</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -365,7 +365,7 @@ with st.sidebar:
     st.session_state["usuario_ativo"] = operador_logado
 
     st.markdown(f"""
-        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid #FF5F00; border-radius: 10px; padding: 12px; margin-top: 15px;">
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid #F76D4D; border-radius: 10px; padding: 12px; margin-top: 15px;">
             <div style="font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 700;">Status Operacional</div>
             <div style="font-size: 13px; color: #FFFFFF; font-weight: 800; margin-top: 2px;">{st.session_state['usuario_ativo']}</div>
         </div>
@@ -391,7 +391,7 @@ def get_responsaveis_cadastrados():
 
 lista_responsaveis_filtro = get_responsaveis_cadastrados()
 
-# Cabeçalho Principal do Painel (Inspirado no Header do Expo CIEE)
+# Cabeçalho Principal (Paleta de cores integrada)
 st.markdown(f"""
     <div class="ciee-top-bar">
         <div class="ciee-title-wrapper">
@@ -444,7 +444,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     status_atual = st.session_state["filtro_status_clique"]
 
     # ==========================================
-    # DASHBOARD COM DESIGN DE EXPO CIEE (EFEITO 3D NEON)
+    # DASHBOARD DE MÉTRICAS 3D
     # ==========================================
     c_t, c_nc, c_c, c_cf, c_conv, c_pa, c_pn = st.columns(7)
     
@@ -453,7 +453,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-total {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Total Base</span><span class="kpi-icon">🏛️</span></div>
-                <div class="kpi-value" style="color: #c084fc;">{fmt_num(total_cnpjs)}</div>
+                <div class="kpi-value" style="color: #9ab4f5;">{fmt_num(total_cnpjs)}</div>
                 <div class="kpi-sub">100% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -479,7 +479,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-contatado {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Contatados</span><span class="kpi-icon">📞</span></div>
-                <div class="kpi-value" style="color: #60a5fa;">{fmt_num(qtd_contatados)}</div>
+                <div class="kpi-value" style="color: #ea70db;">{fmt_num(qtd_contatados)}</div>
                 <div class="kpi-sub">{pct(qtd_contatados):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -492,7 +492,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-futuro {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Contato Futuro</span><span class="kpi-icon">📅</span></div>
-                <div class="kpi-value" style="color: #f472b6;">{fmt_num(qtd_futuros)}</div>
+                <div class="kpi-value" style="color: #f3588f;">{fmt_num(qtd_futuros)}</div>
                 <div class="kpi-sub">{pct(qtd_futuros):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -505,7 +505,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.markdown(f'''
             <div class="card-kpi border-convertido {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Convertidos</span><span class="kpi-icon">🚀</span></div>
-                <div class="kpi-value" style="color: #fb923c;">{fmt_num(qtd_convertidos)}</div>
+                <div class="kpi-value" style="color: #fca08a;">{fmt_num(qtd_convertidos)}</div>
                 <div class="kpi-sub">{pct(qtd_convertidos):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
@@ -539,7 +539,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             st.session_state["filtro_status_clique"] = "Proposta Negada"
             st.rerun()
 
-    st.caption("👆 **Interatividade:** Toque diretamente em um card de métrica para filtrar as empresas abaixo instantaneamente.")
+    st.caption("👆 **Interatividade:** Selecione qualquer card de métrica para filtrar os registros instantaneamente.")
 
     # ==========================================
     # FILTROS DE BUSCA (NEON GLASS DESIGN)
@@ -639,7 +639,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         total_filtrado = 0
 
     # ==========================================
-    # MODAL DE TRATAMENTO DE LEADS (DARK POP-UP EXCLUSIVO)
+    # MODAL DE TRATAMENTO DE LEADS
     # ==========================================
     @st.dialog("📝 Ficha do Lead & Histórico de Interação", width="large")
     def abrir_modal_tratamento(cnpj):
@@ -668,10 +668,10 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         maps_link = f"https://www.google.com/maps/search/?api=1&query={query_maps}"
 
         st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #180933 0%, #0c021c 100%); border: 1px solid rgba(255,255,255,0.15); border-left: 5px solid #FF5F00; border-radius: 12px; padding: 20px; margin-bottom: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <div style="background: linear-gradient(135deg, #180933 0%, #0c021c 100%); border: 1px solid rgba(255,255,255,0.15); border-left: 5px solid #F76D4D; border-radius: 12px; padding: 20px; margin-bottom: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <div style="font-size: 19px; font-weight: 800; color: #FFFFFF; text-shadow: 0 0 10px rgba(255,255,255,0.15);">🏢 {nome_exibicao}</div>
-                    <code style="background-color: rgba(255, 95, 0, 0.15); color: #FF5F00; font-weight: 700; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid rgba(255, 95, 0, 0.3);">CNPJ: {cnpj_completo_exibicao}</code>
+                    <div style="font-size: 19px; font-weight: 800; color: #FFFFFF;">🏢 {nome_exibicao}</div>
+                    <code style="background-color: rgba(247, 109, 77, 0.15); color: #F76D4D; font-weight: 700; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid rgba(247, 109, 77, 0.3);">CNPJ: {cnpj_completo_exibicao}</code>
                 </div>
                 <div style="font-size: 13px; color: #e2e8f0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px;">
                     <div><span style="color: #94a3b8; font-weight: 600;">Razão Social:</span><br><b>{row.get('razao_social', '-')}</b></div>
@@ -692,7 +692,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 msg_whats = urllib.parse.quote(f"Olá! Sou {st.session_state['usuario_ativo']} do CIEE e gostaria de falar com o responsável de RH da {nome_exibicao} sobre programas de Estágio e Aprendizagem.")
                 st.link_button("💬 Chamar no WhatsApp Web", f"https://wa.me/55{clean_tel}?text={msg_whats}", use_container_width=True)
             else:
-                st.button("☎️ Contato Fixo (WhatsApp indisponível)", disabled=True, use_container_width=True)
+                st.button("☎️ Contato Fixo (WhatsApp)", disabled=True, use_container_width=True)
 
         st.markdown("<hr style='margin: 18px 0; border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
         st.markdown("##### ⚙️ Atualização do Follow-up")
@@ -729,7 +729,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         if obs_banco:
             st.info(obs_banco)
         else:
-            st.caption("Sem interações salvas para este CNPJ.")
+            st.caption("Sem interações salvas.")
 
         with st.form(f"form_tratamento\_{cnpj}"):
             nova_nota = st.text_area(
@@ -806,7 +806,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     """
     df_tabela = pd.read_sql(text(query_dados), engine, params=params)
 
-    # Titulo e Botão de Exportação Alinhados com Design Laranja
+    # Titulo e Botão de Exportação Alinhados
     col_titulo_tab, col_export = st.columns([3, 2])
     with col_titulo_tab:
         status_indicador = f" • Filtro ativo: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
@@ -904,7 +904,7 @@ else:
         df_recusas = pd.DataFrame(list(motivos_contagem.items()), columns=["Motivo", "Quantidade"]).sort_values(by="Quantidade", ascending=False)
         
         if df_recusas["Quantidade"].sum() > 0:
-            st.bar_chart(df_recusas.set_index("Motivo"), color="#DC2626")
+            st.bar_chart(df_recusas.set_index("Motivo"), color="#D02560")
         else:
             st.caption("Sem dados de recusa informados.")
 
@@ -914,7 +914,7 @@ else:
     try:
         df_status = pd.read_sql(text(query_total_status), engine)
         if not df_status.empty:
-            st.bar_chart(df_status.set_index("status_followup"), color="#FF5F00")
+            st.bar_chart(df_status.set_index("status_followup"), color="#F76D4D")
         else:
             st.caption("Nenhuma interação cadastrada.")
     except Exception:
