@@ -1000,3 +1000,4 @@ else:
             """
         html_funil += "</div>"
         st.markdown(html_funil, unsafe_allow_html=True)
+
