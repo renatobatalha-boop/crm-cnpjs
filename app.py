@@ -9,7 +9,7 @@ import urllib.parse
 # ==========================================
 st.set_page_config(
     page_title="Painel Corporativo - Gestão de Leads | CIEE",
-    page_icon="🏢",
+    page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -33,54 +33,95 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. IDENTIDADE VISUAL E CARDS CLICÁVEIS (CSS)
+# 3. DESIGN SYSTEM APPS SCRIPT / TAILWIND CIEE (CSS)
 # ==========================================
 st.markdown("""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
     header {visibility: hidden;}
     [data-testid="collapsedControl"] {display: block;}
     
     .stApp {
-        background-color: #F4F6FB !important;
-        color: #1E293B !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: radial-gradient(circle at top left, #F8FAFC 0%, #EFF4FB 100%) !important;
+        color: #0F172A !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
     
     .block-container {
-        padding-top: 0.5rem !important;
-        padding-bottom: 2rem !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        padding-top: 0.6rem !important;
+        padding-bottom: 2.5rem !important;
+        padding-left: 1.2rem !important;
+        padding-right: 1.2rem !important;
         max-width: 100% !important;
     }
 
-    .ciee-top-bar {
-        background: linear-gradient(90deg, #31006F 0%, #722282 60%, #005CB9 100%);
-        border-radius: 12px;
-        padding: 14px 20px;
+    /* Sidebar Estilo Web App */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1E004A 0%, #31006F 100%) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    section[data-testid="stSidebar"] * {
+        color: #F8FAFC !important;
+    }
+    section[data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] > div {
+        background-color: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        color: #FFFFFF !important;
+        border-radius: 10px !important;
+    }
+
+    /* Hero Banner Superior (Estilo Expo CIEE Apps Script) */
+    .ciee-hero {
+        background: linear-gradient(120deg, #240054 0%, #4A0E8F 50%, #005CB9 100%);
+        border-radius: 16px;
+        padding: 18px 26px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 12px;
-        box-shadow: 0 4px 14px rgba(49, 0, 111, 0.18);
+        margin-bottom: 16px;
+        box-shadow: 0 10px 25px -5px rgba(49, 0, 111, 0.28);
+        border-bottom: 3px solid #FF5F00;
         color: #ffffff;
     }
-    .ciee-title {
-        font-size: 19px;
-        font-weight: 800;
-        letter-spacing: -0.2px;
+    .ciee-hero-left {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 16px;
+    }
+    .ciee-hero-icon {
+        width: 46px;
+        height: 46px;
+        background: rgba(255, 95, 0, 0.2);
+        border: 1px solid rgba(255, 95, 0, 0.5);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+    .ciee-hero-title {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.4px;
+        margin: 0;
+        line-height: 1.2;
+    }
+    .ciee-hero-sub {
+        font-size: 12.5px;
+        color: #E2E8F0;
+        font-weight: 400;
+        margin-top: 2px;
     }
     .ciee-badge-live {
-        background-color: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
         color: #ffffff;
-        border: 1px solid rgba(255, 255, 255, 0.35);
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -88,93 +129,152 @@ st.markdown("""
     .live-dot {
         width: 8px;
         height: 8px;
-        background-color: #FF5F00;
+        background-color: #10B981;
         border-radius: 50%;
-        box-shadow: 0 0 8px #FF5F00;
+        box-shadow: 0 0 10px #10B981;
     }
 
-    /* Cards KPI com Efeito Clicável Dinâmico */
+    /* Cards KPI Estilo Apps Script */
     .card-kpi {
-        background-color: #FFFFFF;
+        background: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 12px;
+        border-radius: 14px;
         padding: 12px 14px;
-        height: 96px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        height: 108px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        border-top: 4px solid #CBD5E1;
+        position: relative;
+        overflow: hidden;
         pointer-events: none;
+        transition: all 0.2s ease;
     }
     .card-kpi-ativo {
-        background-color: #FFFDFB;
+        background: linear-gradient(180deg, #FFFFFF 0%, #FFF7ED 100%);
         border: 2px solid #FF5F00 !important;
-        border-top: 5px solid #FF5F00 !important;
-        box-shadow: 0 4px 14px rgba(255, 95, 0, 0.18);
+        box-shadow: 0 8px 20px rgba(255, 95, 0, 0.18);
     }
-
-    .border-total { border-top-color: #31006F; }
-    .border-nao-contatado { border-top-color: #94A3B8; }
-    .border-contatado { border-top-color: #005CB9; }
-    .border-futuro { border-top-color: #722282; }
-    .border-convertido { border-top-color: #FF5F00; }
-    .border-ativo { border-top-color: #059669; }
-    .border-negado { border-top-color: #DC2626; }
-
+    .kpi-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
     .kpi-title {
-        font-size: 10px;
+        font-size: 10.5px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         color: #64748B;
     }
+    .kpi-icon-pill {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
     .kpi-value {
         font-size: 21px;
         font-weight: 900;
-        letter-spacing: -0.5px;
+        letter-spacing: -0.6px;
         line-height: 1.1;
-        margin: 2px 0;
-        color: #1E293B;
+        color: #0F172A;
     }
-    .kpi-sub {
-        font-size: 10px;
+    .kpi-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 10.5px;
         font-weight: 600;
-        color: #94A3B8;
+    }
+    .kpi-progress-bg {
+        width: 100%;
+        height: 4px;
+        background-color: #F1F5F9;
+        border-radius: 99px;
+        margin-top: 4px;
+        overflow: hidden;
+    }
+    .kpi-progress-fill {
+        height: 100%;
+        border-radius: 99px;
     }
 
-    /* Botão Padrão de Ações */
-    .stFormSubmitButton button, .stDownloadButton button {
-        background-color: #FF5F00 !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-weight: 700 !important;
-    }
-
-    /* Camada invisível que permite clicar no Card HTML */
+    /* Camada invisível clicável sobre os Cards */
     div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton {
-        margin-top: -96px !important;
-        height: 96px !important;
+        margin-top: -108px !important;
+        height: 108px !important;
         position: relative;
         z-index: 10;
     }
     div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton button {
-        height: 96px !important;
+        height: 108px !important;
         width: 100% !important;
         background: transparent !important;
         color: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
         cursor: pointer !important;
     }
     div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton button:hover {
-        background: rgba(49, 0, 111, 0.04) !important;
+        background: rgba(49, 0, 111, 0.035) !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton button:focus {
-        outline: none !important;
-        box-shadow: none !important;
+
+    /* Painéis e Containers de Relatório (Aba 2) */
+    .report-panel {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 20px 22px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        margin-bottom: 16px;
+    }
+    .report-panel-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .metric-row {
+        margin-bottom: 12px;
+    }
+    .metric-row-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 4px;
+    }
+    .metric-bar-bg {
+        width: 100%;
+        height: 9px;
+        background: #F1F5F9;
+        border-radius: 99px;
+        overflow: hidden;
+    }
+    .metric-bar-fill {
+        height: 100%;
+        border-radius: 99px;
+    }
+
+    /* Botões de Ação e Exportação */
+    .stFormSubmitButton button, .stDownloadButton button {
+        background: linear-gradient(90deg, #FF5F00 0%, #E05300 100%) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 12px rgba(255, 95, 0, 0.25) !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -226,23 +326,25 @@ LISTA_OPERADORES_OFICIAIS = [
 # ==========================================
 # 5. MENU LATERAL (NAVEGAÇÃO)
 # ==========================================
-st.sidebar.markdown("### 🏢 Gestão CIEE")
+st.sidebar.markdown("### 🏛️ Ecossistema CIEE")
+st.sidebar.caption("Painel Inteligente de Prospecção & Gestão de Parcerias SP")
+
 aba_selecionada = st.sidebar.radio(
-    "Navegue pelo painel:",
-    ["🔍 Prospecção de Leads", "📊 Gestão e Produtividade CIEE"],
+    "Módulo de Acesso:",
+    ["🔍 Prospecção de Leads", "📊 Relatório de Gestão & Ranking"],
     index=0
 )
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### 👤 Operador Ativo")
+st.sidebar.markdown("### 👤 Identificação do Operador")
 
 operador_logado = st.sidebar.selectbox(
-    "Selecione seu nome:",
+    "Consultor(a) Ativo(a):",
     options=LISTA_OPERADORES_OFICIAIS,
     index=1  # Default: ALINE CRUZ
 )
 st.session_state["usuario_ativo"] = operador_logado
-st.sidebar.info(f"Conectado como:\n**{st.session_state['usuario_ativo']}**")
+st.sidebar.success(f"Logado como:\n**{st.session_state['usuario_ativo']}**")
 
 # ==========================================
 # 6. LISTA DE RESPONSÁVEIS
@@ -264,12 +366,16 @@ def get_responsaveis_cadastrados():
 
 lista_responsaveis_filtro = get_responsaveis_cadastrados()
 
-# Cabeçalho do Painel
+# Hero Banner Superior (Estilo Web App Apps Script)
+subtitulo_topo = "Mapeamento Operacional de Empresas • Receita Federal SP" if aba_selecionada == "🔍 Prospecção de Leads" else "Painel Executivo de Acompanhamento, Eficiência Comercial e Diagnóstico de Recusas"
 st.markdown(f"""
-    <div class="ciee-top-bar">
-        <div class="ciee-title">
-            <span>🏛️ PROSPECÇÃO DE CNPJs</span>
-            <span style="font-size: 14px; font-weight: 400; opacity: 0.9;">| CIEE São Paulo</span>
+    <div class="ciee-hero">
+        <div class="ciee-hero-left">
+            <div class="ciee-hero-icon">🏛️</div>
+            <div>
+                <div class="ciee-hero-title">PAINEL DE GESTÃO E PROSPECÇÃO CIEE</div>
+                <div class="ciee-hero-sub">{subtitulo_topo}</div>
+            </div>
         </div>
         <div class="ciee-badge-live">
             <span class="live-dot"></span>
@@ -286,7 +392,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     if "filtro_status_clique" not in st.session_state:
         st.session_state["filtro_status_clique"] = "Todos"
 
-    # Consulta dos KPIs Gerais
     query_kpis_geral = """
         SELECT 
             COUNT(*) AS total,
@@ -317,66 +422,82 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     pct = lambda val: (val / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
     status_atual = st.session_state["filtro_status_clique"]
 
+    # Função auxiliar para gerar o HTML do Card no padrão Apps Script
+    def render_kpi_card(titulo, valor, percentual, cor_hex, bg_icone, emoji, ativo):
+        cls_ativo = "card-kpi-ativo" if ativo else ""
+        largura_barra = min(max(percentual, 4.0), 100.0)
+        return f"""
+            <div class="card-kpi {cls_ativo}">
+                <div class="kpi-header">
+                    <span class="kpi-title">{titulo}</span>
+                    <span class="kpi-icon-pill" style="background: {bg_icone}; color: {cor_hex};">{emoji}</span>
+                </div>
+                <div class="kpi-value" style="color: {cor_hex};">{fmt_num(valor)}</div>
+                <div>
+                    <div class="kpi-footer">
+                        <span style="color: #64748B;">Participação</span>
+                        <span style="color: {cor_hex};">{percentual:.1f}%</span>
+                    </div>
+                    <div class="kpi-progress-bg">
+                        <div class="kpi-progress-fill" style="width: {largura_barra}%; background: {cor_hex};"></div>
+                    </div>
+                </div>
+            </div>
+        """
+
     # ==========================================
-    # DASHBOARD DIRETO NO CARD (CLIQUE DIRETO NO CARD)
+    # DASHBOARD EXECUTIVO CLICÁVEL (NO TOPO)
     # ==========================================
     c_t, c_nc, c_c, c_cf, c_conv, c_pa, c_pn = st.columns(7)
 
     with c_t:
-        cls_ativo = "card-kpi-ativo" if status_atual == "Todos" else ""
-        st.markdown(f'<div class="card-kpi border-total {cls_ativo}"><div class="kpi-title">Total Base</div><div class="kpi-value" style="color: #31006F;">{fmt_num(total_cnpjs)}</div><div class="kpi-sub">100% da base</div></div>', unsafe_allow_html=True)
+        st.markdown(render_kpi_card("Total Base", total_cnpjs, 100.0, "#31006F", "#F3E8FF", "🏢", status_atual == "Todos"), unsafe_allow_html=True)
         if st.button(" ", key="card_todos", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Todos"
             st.rerun()
 
     with c_nc:
-        cls_ativo = "card-kpi-ativo" if status_atual == "Lead Não Contatado" else ""
-        st.markdown(f'<div class="card-kpi border-nao-contatado {cls_ativo}"><div class="kpi-title">Não Contatados</div><div class="kpi-value" style="color: #64748B;">{fmt_num(qtd_nao_contatados)}</div><div class="kpi-sub">{pct(qtd_nao_contatados):.1f}% da base</div></div>', unsafe_allow_html=True)
+        st.markdown(render_kpi_card("Pendentes", qtd_nao_contatados, pct(qtd_nao_contatados), "#475569", "#F1F5F9", "⏳", status_atual == "Lead Não Contatado"), unsafe_allow_html=True)
         if st.button(" ", key="card_nc", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Lead Não Contatado"
             st.rerun()
 
     with c_c:
-        cls_ativo = "card-kpi-ativo" if status_atual == "Lead Contatado" else ""
-        st.markdown(f'<div class="card-kpi border-contatado {cls_ativo}"><div class="kpi-title">Contatados</div><div class="kpi-value" style="color: #005CB9;">{fmt_num(qtd_contatados)}</div><div class="kpi-sub">{pct(qtd_contatados):.1f}% da base</div></div>', unsafe_allow_html=True)
+        st.markdown(render_kpi_card("Contatados", qtd_contatados, pct(qtd_contatados), "#005CB9", "#E0F2FE", "📞", status_atual == "Lead Contatado"), unsafe_allow_html=True)
         if st.button(" ", key="card_c", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Lead Contatado"
             st.rerun()
 
     with c_cf:
-        cls_ativo = "card-kpi-ativo" if status_atual == "Contato Futuro" else ""
-        st.markdown(f'<div class="card-kpi border-futuro {cls_ativo}"><div class="kpi-title">Contato Futuro</div><div class="kpi-value" style="color: #722282;">{fmt_num(qtd_futuros)}</div><div class="kpi-sub">{pct(qtd_futuros):.1f}% da base</div></div>', unsafe_allow_html=True)
+        st.markdown(render_kpi_card("Contato Futuro", qtd_futuros, pct(qtd_futuros), "#722282", "#FAE8FF", "📅", status_atual == "Contato Futuro"), unsafe_allow_html=True)
         if st.button(" ", key="card_cf", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Contato Futuro"
             st.rerun()
 
     with c_conv:
-        cls_ativo = "card-kpi-ativo" if status_atual == "Lead Convertido" else ""
-        st.markdown(f'<div class="card-kpi border-convertido {cls_ativo}"><div class="kpi-title">Convertidos</div><div class="kpi-value" style="color: #FF5F00;">{fmt_num(qtd_convertidos)}</div><div class="kpi-sub">{pct(qtd_convertidos):.1f}% da base</div></div>', unsafe_allow_html=True)
+        st.markdown(render_kpi_card("Convertidos", qtd_convertidos, pct(qtd_convertidos), "#FF5F00", "#FFEDD5", "🚀", status_atual == "Lead Convertido"), unsafe_allow_html=True)
         if st.button(" ", key="card_conv", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Lead Convertido"
             st.rerun()
 
     with c_pa:
-        cls_ativo = "card-kpi-ativo" if status_atual == "Parceiro Ativo" else ""
-        st.markdown(f'<div class="card-kpi border-ativo {cls_ativo}"><div class="kpi-title">Parceiro Ativo</div><div class="kpi-value" style="color: #059669;">{fmt_num(qtd_ativos)}</div><div class="kpi-sub">{pct(qtd_ativos):.1f}% da base</div></div>', unsafe_allow_html=True)
+        st.markdown(render_kpi_card("Parceiro Ativo", qtd_ativos, pct(qtd_ativos), "#059669", "#D1FAE5", "🤝", status_atual == "Parceiro Ativo"), unsafe_allow_html=True)
         if st.button(" ", key="card_pa", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Parceiro Ativo"
             st.rerun()
 
     with c_pn:
-        cls_ativo = "card-kpi-ativo" if status_atual == "Proposta Negada" else ""
-        st.markdown(f'<div class="card-kpi border-negado {cls_ativo}"><div class="kpi-title">Prop. Negada</div><div class="kpi-value" style="color: #DC2626;">{fmt_num(qtd_negados)}</div><div class="kpi-sub">{pct(qtd_negados):.1f}% da base</div></div>', unsafe_allow_html=True)
+        st.markdown(render_kpi_card("Prop. Negada", qtd_negados, pct(qtd_negados), "#DC2626", "#FEE2E2", "✖️", status_atual == "Proposta Negada"), unsafe_allow_html=True)
         if st.button(" ", key="card_pn", use_container_width=True):
             st.session_state["filtro_status_clique"] = "Proposta Negada"
             st.rerun()
 
-    st.caption("👆 **Dica:** Clique em qualquer card para filtrar a relação instantaneamente.")
+    st.caption("👆 **Filtro Interativo:** Clique diretamente sobre qualquer card acima para filtrar a listagem de empresas.")
 
     # ==========================================
     # FILTROS DE BUSCA (ABAIXO DO DASHBOARD)
     # ==========================================
-    with st.expander("🔍 FILTROS AVANÇADOS E PROSPECÇÃO", expanded=True):
+    with st.expander("🔍 FILTROS AVANÇADOS E SEGMENTAÇÃO", expanded=True):
         col_f1, col_f2, col_f3, col_f4 = st.columns(4)
         with col_f1:
             opcoes_status = ["Todos"] + STATUS_OFICIAIS
@@ -411,7 +532,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
 
     offset_val = (pagina_atual - 1) * registros_por_pagina
 
-    # Montagem Dinâmica de WHERE SQL
     where_clauses = ["1=1"]
     params = {}
 
@@ -504,11 +624,11 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         maps_link = f"https://www.google.com/maps/search/?api=1&query={query_maps}"
 
         st.markdown(f"""
-            <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-left: 5px solid #FF5F00; border-radius: 10px; padding: 16px; margin-bottom: 16px;">
-                <div style="font-size: 17px; font-weight: 800; color: #31006F; margin-bottom: 8px;">🏢 {nome_exibicao}</div>
-                <div style="font-size: 13px; color: #475569; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%); border: 1px solid #E2E8F0; border-left: 5px solid #FF5F00; border-radius: 12px; padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                <div style="font-size: 18px; font-weight: 800; color: #31006F; margin-bottom: 10px;">🏢 {nome_exibicao}</div>
+                <div style="font-size: 13px; color: #334155; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div><b>Razão Social:</b> {row.get('razao_social', '-')}</div>
-                    <div><b>CNPJ Completo:</b> <code style="background-color: #F1F5F9; color: #005CB9; font-weight: 700; padding: 2px 6px; border-radius: 4px;">{cnpj_completo_exibicao}</code></div>
+                    <div><b>CNPJ Completo:</b> <code style="background-color: #EFF6FF; color: #005CB9; font-weight: 800; padding: 3px 8px; border-radius: 6px;">{cnpj_completo_exibicao}</code></div>
                     <div><b>Porte:</b> {row.get('porte_empresa', 'Não Informado')}</div>
                     <div><b>Telefone:</b> {tel_fmt}</div>
                     <div><b>E-mail:</b> {email_fmt}</div>
@@ -628,7 +748,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # ==========================================
     # TABELA PRINCIPAL DE EMPRESAS (RELAÇÃO)
     # ==========================================
-    # Observações, Responsável e Status retirados da tela inicial
     query_dados = f"""
         SELECT 
             cnpj_formatado, razao_social, nome_fantasia, porte_empresa,
@@ -650,8 +769,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
 
     df_tabela = pd.read_sql(text(query_dados), engine, params=params)
 
-    # Barra superior da tabela com título e Botão de Exportação em destaque
-    col_titulo_tab, col_export = st.columns([3, 2])
+    col_titulo_tab, col_export = st.columns()
     with col_titulo_tab:
         status_indicador = f" • Filtro ativo: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
         st.markdown(f"#### 📋 Relação de Empresas ({fmt_num(total_filtrado)} CNPJs localizados{status_indicador})")
@@ -670,15 +788,13 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     if df_tabela.empty:
         st.info("Nenhuma empresa encontrada com os parâmetros informados.")
     else:
-        # Colunas exibidas: Sem Responsável, Sem Status e Sem Observações (Totalmente limpa)
         colunas_exibicao = [
             'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
             'segmentacao', 'setor_tipo', 'bairro', 'cep'
         ]
 
-        st.caption("👉 **Clique em qualquer linha da tabela** para abrir a ficha de prospecção e registrar atendimentos.")
+        st.caption("👉 **Clique sobre qualquer linha da tabela** para abrir o pop-up com os dados completos e registrar o atendimento.")
 
-        # Evento de seleção com chave de sessão garantida
         event = st.dataframe(
             df_tabela[colunas_exibicao],
             column_config={
@@ -698,7 +814,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             key="tabela_leads"
         )
 
-        # Dispara a abertura do modal ao selecionar qualquer linha
         if event and event.selection and event.selection.rows:
             idx_selecionado = event.selection.rows[0]
             cnpj_clicado = df_tabela.iloc[idx_selecionado]['cnpj_formatado']
@@ -708,19 +823,18 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         st.caption(f"Página {pagina_atual} de {fmt_num(total_paginas)} • Exibindo {len(df_tabela)} registros nesta página.")
 
 # ==========================================
-# ABA 2: GESTÃO E PRODUTIVIDADE CIEE
+# ABA 2: RELATÓRIO DE GESTÃO E PRODUTIVIDADE (DESIGN APPS SCRIPT)
 # ==========================================
 else:
-    st.markdown("### 📊 Indicadores de Performance & Produtividade")
-    st.markdown("---")
-
     query_gestao = """
         SELECT 
-            COALESCE(NULLIF(TRIM(responsavel_tratamento), ''), 'Não Atribuído') AS "Responsável",
+            COALESCE(NULLIF(TRIM(responsavel_tratamento), ''), 'Não Atribuído') AS responsavel,
             status_followup,
             observacoes,
             COUNT(*) AS total
         FROM empresas
+        WHERE (responsavel_tratamento IS NOT NULL AND TRIM(responsavel_tratamento) != '')
+           OR (status_followup IS NOT NULL AND TRIM(status_followup) != '' AND status_followup != 'Lead Não Contatado')
         GROUP BY 1, 2, 3
     """
     try:
@@ -728,46 +842,161 @@ else:
     except Exception:
         df_gestao = pd.DataFrame()
 
-    col_g1, col_g2 = st.columns(2)
+    total_abordados = int(df_gestao["total"].sum()) if not df_gestao.empty else 0
+    total_conv_ativos = int(df_gestao[df_gestao["status_followup"].isin(["Lead Convertido", "Parceiro Ativo"])]["total"].sum()) if not df_gestao.empty else 0
+    total_negados_rel = int(df_gestao[df_gestao["status_followup"] == "Proposta Negada"]["total"].sum()) if not df_gestao.empty else 0
+    taxa_eficiencia_global = (total_conv_ativos / total_abordados * 100) if total_abordados > 0 else 0.0
+
+    # Big Numbers Executivos no Topo do Relatório
+    m1, m2, m3, m4 = st.columns(4)
+    with m1:
+        st.markdown(f"""
+            <div class="report-panel" style="border-top: 4px solid #005CB9; padding: 16px;">
+                <div class="kpi-title">Total de Empresas Trabalhadas</div>
+                <div class="kpi-value" style="color: #005CB9; font-size: 28px; margin-top: 6px;">{fmt_num(total_abordados)}</div>
+                <div class="kpi-sub">Leads com atuação registrada</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with m2:
+        st.markdown(f"""
+            <div class="report-panel" style="border-top: 4px solid #059669; padding: 16px;">
+                <div class="kpi-title">Conversões + Parceiros Ativos</div>
+                <div class="kpi-value" style="color: #059669; font-size: 28px; margin-top: 6px;">{fmt_num(total_conv_ativos)}</div>
+                <div class="kpi-sub">Fechamentos consolidados</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with m3:
+        st.markdown(f"""
+            <div class="report-panel" style="border-top: 4px solid #FF5F00; padding: 16px;">
+                <div class="kpi-title">Eficiência da Equipe (Conversão)</div>
+                <div class="kpi-value" style="color: #FF5F00; font-size: 28px; margin-top: 6px;">{taxa_eficiencia_global:.1f}%</div>
+                <div class="kpi-sub">Contatos vs. Convertidos</div>
+            </div>
+        """, unsafe_allow_html=True)
+    with m4:
+        st.markdown(f"""
+            <div class="report-panel" style="border-top: 4px solid #DC2626; padding: 16px;">
+                <div class="kpi-title">Propostas Negadas</div>
+                <div class="kpi-value" style="color: #DC2626; font-size: 28px; margin-top: 6px;">{fmt_num(total_negados_rel)}</div>
+                <div class="kpi-sub">Oportunidades recusadas</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    col_g1, col_g2 = st.columns()
 
     with col_g1:
-        st.markdown("#### 🏆 Ranking de Conversão por Consultor")
+        st.markdown("""
+            <div class="report-panel">
+                <div class="report-panel-title">
+                    <span>🏆 Ranking de Eficiência da Equipe (Contatos x Convertidos)</span>
+                    <span style="font-size: 11px; color: #64748B; font-weight: 600;">Performance Individual</span>
+                </div>
+        """, unsafe_allow_html=True)
+
         if not df_gestao.empty:
-            df_ranking = df_gestao.groupby("Responsável").agg(
-                Total_Leads_Trabalhados=("total", "sum"),
-                Conversoes_Efetivas=("total", lambda x: sum(df_gestao.loc[x.index, "total"][df_gestao.loc[x.index, "status_followup"].isin(["Lead Convertido", "Parceiro Ativo"])]))
-            ).reset_index().sort_values(by="Conversoes_Efetivas", ascending=False)
-            
-            st.dataframe(df_ranking, hide_index=True, use_container_width=True)
+            df_ranking = df_gestao.groupby("responsavel").agg(
+                Contatos_Realizados=("total", "sum"),
+                Convertidos=("total", lambda x: sum(df_gestao.loc[x.index, "total"][df_gestao.loc[x.index, "status_followup"].isin(["Lead Convertido", "Parceiro Ativo"])])),
+                Em_Negociacao=("total", lambda x: sum(df_gestao.loc[x.index, "total"][df_gestao.loc[x.index, "status_followup"].isin(["Lead Contatado", "Contato Futuro"])]))
+            ).reset_index()
+
+            df_ranking["Taxa_Eficiencia"] = df_ranking.apply(
+                lambda r: round((r["Convertidos"] / r["Contatos_Realizados"] * 100), 1) if r["Contatos_Realizados"] > 0 else 0.0,
+                axis=1
+            )
+            df_ranking = df_ranking.sort_values(by=["Convertidos", "Contatos_Realizados"], ascending=False).reset_index(drop=True)
+
+            medalhas = ["🥇 ", "🥈 ", "🥉 "]
+            df_ranking["Consultor(a)"] = [
+                f"{medalhas[i] if i < 3 else f'{i+1}º • '}{row['responsavel']}"
+                for i, row in df_ranking.iterrows()
+            ]
+
+            st.dataframe(
+                df_ranking[["Consultor(a)", "Contatos_Realizados", "Em_Negociacao", "Convertidos", "Taxa_Eficiencia"]],
+                column_config={
+                    "Consultor(a)": "Consultor(a)",
+                    "Contatos_Realizados": st.column_config.NumberColumn("Trabalhados", format="%d"),
+                    "Em_Negociacao": st.column_config.NumberColumn("Em Andamento", format="%d"),
+                    "Convertidos": st.column_config.NumberColumn("Convertidos", format="%d"),
+                    "Taxa_Eficiencia": st.column_config.ProgressColumn(
+                        "% Eficiência",
+                        help="Percentual de conversão sobre os leads trabalhados",
+                        format="%.1f%%",
+                        min_value=0,
+                        max_value=100
+                    )
+                },
+                hide_index=True,
+                use_container_width=True
+            )
         else:
-            st.info("Nenhum dado comercial disponível no momento.")
+            st.info("Ainda não há interações registradas pelos consultores.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with col_g2:
-        st.markdown("#### ❌ Principais Recusas de Clientes CIEE")
         motivos_contagem = {motivo: 0 for motivo in MOTIVOS_RECUSA_OPCOES}
-        
         if not df_gestao.empty:
             for _, r in df_gestao.iterrows():
                 obs = str(r['observacoes'])
                 for motivo in MOTIVOS_RECUSA_OPCOES:
                     if motivo in obs:
-                        motivos_contagem[motivo] += r['total']
-        
-        df_recusas = pd.DataFrame(list(motivos_contagem.items()), columns=["Motivo", "Quantidade"]).sort_values(by="Quantidade", ascending=False)
-        
-        if df_recusas["Quantidade"].sum() > 0:
-            st.bar_chart(df_recusas.set_index("Motivo"), color="#DC2626")
-        else:
-            st.caption("Nenhum motivo de recusa registrado até o momento. Utilize o status 'Proposta Negada' no modal de prospecção para categorizar.")
+                        motivos_contagem[motivo] += int(r['total'])
 
-    st.markdown("---")
-    st.markdown("#### 📈 Distribuição Geral de Contatos Efetuados")
-    query_total_status = "SELECT status_followup, COUNT(*) as qtd FROM empresas WHERE status_followup IS NOT NULL GROUP BY 1"
-    try:
-        df_status = pd.read_sql(text(query_total_status), engine)
-        if not df_status.empty:
-            st.bar_chart(df_status.set_index("status_followup"), color="#005CB9")
-        else:
-            st.caption("Sem dados de interações cadastrados na base.")
-    except Exception:
-        st.caption("Aguardando novas interações para renderização do gráfico.")
+        total_motivos = sum(motivos_contagem.values())
+        html_recusas = """
+            <div class="report-panel">
+                <div class="report-panel-title">
+                    <span>❌ Diagnóstico: Principais Recusas dos Clientes</span>
+                    <span style="font-size: 11px; color: #DC2626; font-weight: 700;">Programas CIEE</span>
+                </div>
+        """
+        for motivo, qtd in sorted(motivos_contagem.items(), key=lambda x: x, reverse=True):
+            pct_m = (qtd / total_motivos * 100) if total_motivos > 0 else 0.0
+            larg_m = max(pct_m, 3.0) if qtd > 0 else 0.0
+            html_recusas += f"""
+                <div class="metric-row">
+                    <div class="metric-row-header">
+                        <span>{motivo}</span>
+                        <span style="color: #DC2626; font-weight: 800;">{fmt_num(qtd)} ({pct_m:.1f}%)</span>
+                    </div>
+                    <div class="metric-bar-bg">
+                        <div class="metric-bar-fill" style="width: {larg_m}%; background: linear-gradient(90deg, #EF4444 0%, #DC2626 100%);"></div>
+                    </div>
+                </div>
+            """
+        html_recusas += "</div>"
+        st.markdown(html_recusas, unsafe_allow_html=True)
+
+        # Evolução do Pipeline por Etapa
+        html_funil = """
+            <div class="report-panel">
+                <div class="report-panel-title">
+                    <span>📈 Evolução das Parcerias por Etapa</span>
+                    <span style="font-size: 11px; color: #005CB9; font-weight: 700;">Pipeline Ativo</span>
+                </div>
+        """
+        cores_status = {
+            "Lead Contatado": "#005CB9",
+            "Contato Futuro": "#722282",
+            "Lead Convertido": "#FF5F00",
+            "Parceiro Ativo": "#059669",
+            "Proposta Negada": "#DC2626"
+        }
+        for st_nome, cor_st in cores_status.items():
+            qtd_st = int(df_gestao[df_gestao["status_followup"] == st_nome]["total"].sum()) if not df_gestao.empty else 0
+            pct_st = (qtd_st / total_abordados * 100) if total_abordados > 0 else 0.0
+            larg_st = max(pct_st, 3.0) if qtd_st > 0 else 0.0
+            html_funil += f"""
+                <div class="metric-row">
+                    <div class="metric-row-header">
+                        <span>{st_nome}</span>
+                        <span style="color: {cor_st}; font-weight: 800;">{fmt_num(qtd_st)} ({pct_st:.1f}%)</span>
+                    </div>
+                    <div class="metric-bar-bg">
+                        <div class="metric-bar-fill" style="width: {larg_st}%; background: {cor_st};"></div>
+                    </div>
+                </div>
+            """
+        html_funil += "</div>"
+        st.markdown(html_funil, unsafe_allow_html=True)
