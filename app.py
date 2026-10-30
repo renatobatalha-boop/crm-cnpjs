@@ -33,7 +33,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. IDENTIDADE VISUAL EXPO CIEE (CSS COMPLETO E DEFINITIVO)
+# 3. IDENTIDADE VISUAL EXPO CIEE (CSS AJUSTADO)
 # ==========================================
 st.markdown("""
     <style>
@@ -241,24 +241,14 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(247, 109, 77, 0.45) !important;
     }
 
-    /* =======================================================
-       CORREÇÃO DEFINITIVA DO FUNDO DA TABELA (GLIDE DATA GRID)
-       ======================================================= */
-    /* Força todas as áreas internas do grid do Streamlit a serem pretas/roxo escuro */
-    div[data-testid="stDataFrame"] iframe,
-    div[data-testid="stDataFrame"] > div,
-    div[data-testid="stDataFrame"] [data-testid="StyledFullScreenButton"]+div,
+    /* FORÇAR A TABELA DO CANVAS A ADOTAR FUNDO ROXO ESCURO */
+    div[data-testid="stDataFrame"], 
+    div[data-testid="stDataFrame"] > div, 
     div[data-testid="stDataFrame"] [role="grid"],
-    div[data-testid="stDataFrame"] canvas {
-        background-color: #120422 !important;
-        color-scheme: dark !important; /* Força o componente a herdar as cores escuras nativas */
-    }
-
-    /* Força o container do widget a ocultar qualquer elemento de fundo branco residual */
-    div[data-testid="stDataFrame"] {
-        background-color: #120422 !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        border-radius: 12px !important;
+    div[data-testid="stDataFrame"] canvas,
+    div[data-testid="stDataFrame"] div {
+        background-color: #1a082e !important;
+        color: #ffffff !important;
     }
 
     /* Camada para clique nos cards KPI */
