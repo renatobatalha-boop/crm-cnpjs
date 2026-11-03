@@ -240,7 +240,7 @@ st.markdown("""
         background-color: transparent !important;
     }
 
-    /* SELECTBOXES (Fundo Preto e Texto Branco) */
+    /* SELECTBOXES */
     [data-testid="stSelectbox"] > div > div,
     [data-testid="stSelectbox"] div[data-baseweb="select"],
     [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
@@ -511,12 +511,75 @@ SECOES_CNAE_LISTA = [
     "Organismos Internacionais e Outras Instituições Extraterritoriais"
 ]
 
+# Mapa de palavras-chave para busca textual por segmento
+MAPA_PALAVRAS_CHAVE_SEGMENTOS = {
+    "Comércio; Reparação de Veículos Automotores e Motocicletas": [
+        "comercio", "varejo", "loja", "supermercado", "magazine", "mercado", "distribuidora", "auto pecas", "atacado", "concessionaria"
+    ],
+    "Transporte, Armazenamento e Correio": [
+        "transporte", "logistica", "frete", "entregas", "armazem", "expresso", "mudancas", "carga", "correio"
+    ],
+    "Construção": [
+        "construc", "engenharia", "empreendimentos", "obras", "reforma", "instalac", "eletrica", "hidraulica", "pintura", "alvenaria"
+    ],
+    "Educação": [
+        "escola", "colegio", "educac", "ensino", "cursos", "faculdade", "universidade", "treinamento", "idiomas", "bercario"
+    ],
+    "Saúde Humana e Serviços Sociais": [
+        "saude", "medico", "clinica", "odontolog", "hospital", "laboratorio", "psicolog", "terapia", "diagnostico", "fisioterapia"
+    ],
+    "Informação e Comunicação": [
+        "software", "tecnologia", "informatica", "sistemas", "internet", "comunicacao", "telecom", "dados", "web", "computacao"
+    ],
+    "Alojamento e Alimentação": [
+        "restaurante", "alimento", "bar", "lanchonete", "hotel", "pousada", "padaria", "buffet", "pizzaria", "refeicoes"
+    ],
+    "Indústrias de Transformação": [
+        "industria", "fabrica", "manufatura", "metalurgica", "textil", "confeccao", "grafica", "usinagem", "plastico", "quimica"
+    ],
+    "Atividades Imobiliárias": [
+        "imobiliaria", "imoveis", "locacao", "condominio", "patrimonial", "administradora de bens"
+    ],
+    "Atividades Financeiras, de Seguros e Serviços Relacionados": [
+        "banco", "financeira", "credito", "seguros", "investimento", "capital", "corretora", "previdencia"
+    ],
+    "Atividades Profissionais, Científicas e Técnicas": [
+        "advocacia", "contabil", "consultoria", "pericia", "arquitetura", "pesquisa", "juridico", "design", "publicidade"
+    ],
+    "Atividades Administrativas e Serviços Complementares": [
+        "seguranca", "vigilancia", "portaria", "limpeza", "terceirizac", "recursos humanos", "facilities", "cobranca", "viagens"
+    ],
+    "Administração Pública, Defesa e Seguridade Social": [
+        "publica", "prefeitura", "municip", "federal", "secretaria", "tribunal", "governo", "camara", "autarquia"
+    ],
+    "Eletricidade e Gás": [
+        "energia", "eletric", "gas", "solar", "biomassa", "fotovoltaica", "geracao"
+    ],
+    "Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação": [
+        "ambiente", "saneamento", "residuo", "reciclagem", "tratamento de agua", "entulho", "sucata"
+    ],
+    "Artes, Cultura, Esporte e Recreação": [
+        "academia", "esporte", "arte", "teatro", "musica", "producoes", "cinema", "show", "eventos", "fitness"
+    ],
+    "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura": [
+        "agro", "fazenda", "pecuaria", "pesca", "agricola", "cultivo", "reflorest", "graos", "sementes"
+    ],
+    "Indústrias Extrativas": [
+        "minerac", "extracao", "pedreira", "areia", "petroleo", "minerio"
+    ],
+    "Serviços Domésticos": [
+        "domestico", "diarista", "cuidador"
+    ],
+    "Organismos Internacionais e Outras Instituições Extraterritoriais": [
+        "consulado", "embaixada", "internacional", "organizacao das nacoes unidas"
+    ]
+}
+
 # ==========================================
-# 5. DETECÇÃO INTELIGENTE DA COLUNA DE CNAE
+# 5. DETECÇÃO DA COLUNA REAL DE CNAE NO BANCO
 # ==========================================
 @st.cache_data(ttl=3600)
 def obter_coluna_cnae_disponivel():
-    """Identifica o nome real da coluna de CNAE na tabela sem causar erro SQL."""
     try:
         with engine.connect() as conn:
             query = text("""
@@ -528,7 +591,8 @@ def obter_coluna_cnae_disponivel():
             
             candidatos = [
                 'cnae_fiscal', 'cnae_principal', 'cnae_fiscal_principal',
-                'cnae', 'codigo_cnae', 'cnae_primario', 'atividade_principal'
+                'cnae', 'codigo_cnae', 'cnae_primario', 'atividade_principal',
+                'cnae_fiscal_descricao', 'descricao_cnae'
             ]
             for cand in candidatos:
                 if cand in colunas:
@@ -539,9 +603,8 @@ def obter_coluna_cnae_disponivel():
 
 COLUNA_CNAE = obter_coluna_cnae_disponivel()
 
-def classificar_segmento_registro(row):
-    """Classifica a empresa em um dos 21 segmentos oficiais do CNAE."""
-    # 1. Se existir coluna de código CNAE
+def classificar_segmento_em_memoria(row):
+    """Classifica com precisão no Python para garantir o preenchimento correto da coluna na tabela."""
     if COLUNA_CNAE and COLUNA_CNAE in row and pd.notnull(row[COLUNA_CNAE]):
         val = str(row[COLUNA_CNAE])
         digitos = re.sub(r'\D', '', val)
@@ -590,45 +653,65 @@ def classificar_segmento_registro(row):
             elif div == 99:
                 return "Organismos Internacionais e Outras Instituições Extraterritoriais"
 
-    # 2. Classificação Heurística por Nome / Razão Social
+    # Comparação por palavras-chave na Razão Social e Nome Fantasia
     texto = (str(row.get('razao_social', '')) + " " + str(row.get('nome_fantasia', ''))).lower()
+    for seg, palavras in MAPA_PALAVRAS_CHAVE_SEGMENTOS.items():
+        if any(p in texto for p in palavras):
+            return seg
+            
+    return "Outras Atividades de Serviços"
+
+def montar_condicao_sql_segmento(segmento_escolhido, col_cnae=None):
+    """Monta a cláusula WHERE do banco para filtrar diretamente no SQL de forma robusta."""
+    if segmento_escolhido == "Todos":
+        return None
+
+    clausulas = []
     
-    if any(k in texto for k in ['comercio', 'varejo', 'loja', 'supermercado', 'magazine', 'mercado', 'distribuidora', 'auto pecas']):
-        return "Comércio; Reparação de Veículos Automotores e Motocicletas"
-    elif any(k in texto for k in ['transporte', 'logistica', 'frete', 'entregas', 'armazem', 'expresso']):
-        return "Transporte, Armazenamento e Correio"
-    elif any(k in texto for k in ['construc', 'engenharia', 'empreendimentos', 'obras', 'reforma', 'instalac']):
-        return "Construção"
-    elif any(k in texto for k in ['escola', 'colegio', 'educac', 'ensino', 'cursos', 'faculdade', 'universidade', 'treinamento']):
-        return "Educação"
-    elif any(k in texto for k in ['saude', 'medico', 'clinica', 'odontolog', 'hospital', 'laboratorio', 'psicolog', 'terapia']):
-        return "Saúde Humana e Serviços Sociais"
-    elif any(k in texto for k in ['software', 'tecnologia', 'informatica', 'sistemas', 'internet', 'comunicacao', 'telecom']):
-        return "Informação e Comunicação"
-    elif any(k in texto for k in ['restaurante', 'alimento', 'bar', 'lanchonete', 'hotel', 'pousada', 'padaria', 'buffet']):
-        return "Alojamento e Alimentação"
-    elif any(k in texto for k in ['industria', 'fabrica', 'manufatura', 'metalurgica', 'textil', 'confeccao']):
-        return "Indústrias de Transformação"
-    elif any(k in texto for k in ['imobiliaria', 'imoveis', 'locacao', 'condominio', 'patrimonial']):
-        return "Atividades Imobiliárias"
-    elif any(k in texto for k in ['banco', 'financeira', 'credito', 'seguros', 'investimento', 'capital']):
-        return "Atividades Financeiras, de Seguros e Serviços Relacionados"
-    elif any(k in texto for k in ['advocacia', 'contabil', 'consultoria', 'pericia', 'arquitetura', 'pesquisa']):
-        return "Atividades Profissionais, Científicas e Técnicas"
-    elif any(k in texto for k in ['seguranca', 'vigilancia', 'portaria', 'limpeza', 'terceirizac', 'recursos humanos']):
-        return "Atividades Administrativas e Serviços Complementares"
-    elif any(k in texto for k in ['publica', 'prefeitura', 'municip', 'federal', 'secretaria', 'tribunal', 'governo']):
-        return "Administração Pública, Defesa e Seguridade Social"
-    elif any(k in texto for k in ['energia', 'eletric', 'gas', 'solar', 'biomassa']):
-        return "Eletricidade e Gás"
-    elif any(k in texto for k in ['ambiente', 'saneamento', 'residuo', 'reciclagem', 'tratamento de agua']):
-        return "Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação"
-    elif any(k in texto for k in ['academia', 'esporte', 'arte', 'teatro', 'musica', 'producoes', 'cinema', 'show']):
-        return "Artes, Cultura, Esporte e Recreação"
-    elif any(k in texto for k in ['agro', 'fazenda', 'pecuaria', 'pesca', 'agricola', 'cultivo', 'reflorest']):
-        return "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura"
-    else:
-        return "Outras Atividades de Serviços"
+    # 1. Se houver coluna de código CNAE, filtra pelo range de 2 dígitos
+    ranges_cnae = {
+        "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura": (1, 3),
+        "Indústrias Extrativas": (5, 9),
+        "Indústrias de Transformação": (10, 33),
+        "Eletricidade e Gás": (35, 35),
+        "Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação": (36, 39),
+        "Construção": (41, 43),
+        "Comércio; Reparação de Veículos Automotores e Motocicletas": (45, 47),
+        "Transporte, Armazenamento e Correio": (49, 53),
+        "Alojamento e Alimentação": (55, 56),
+        "Informação e Comunicação": (58, 63),
+        "Atividades Financeiras, de Seguros e Serviços Relacionados": (64, 66),
+        "Atividades Imobiliárias": (68, 68),
+        "Atividades Profissionais, Científicas e Técnicas": (69, 75),
+        "Atividades Administrativas e Serviços Complementares": (77, 82),
+        "Administração Pública, Defesa e Seguridade Social": (84, 84),
+        "Educação": (85, 85),
+        "Saúde Humana e Serviços Sociais": (86, 88),
+        "Artes, Cultura, Esporte e Recreação": (90, 93),
+        "Outras Atividades de Serviços": (94, 96),
+        "Serviços Domésticos": (97, 97),
+        "Organismos Internacionais e Outras Instituições Extraterritoriais": (99, 99)
+    }
+
+    if col_cnae and segmento_escolhido in ranges_cnae:
+        ini, fim = ranges_cnae[segmento_escolhido]
+        clausula_cnae = f"""
+            (NULLIF(REGEXP_REPLACE(COALESCE({col_cnae}::text, ''), '\\D', '', 'g'), '') IS NOT NULL 
+             AND SUBSTRING(LPAD(REGEXP_REPLACE({col_cnae}::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN {ini} AND {fim})
+        """
+        clausulas.append(clausula_cnae)
+
+    # 2. Busca por palavras-chave na Razão Social e Nome Fantasia
+    palavras = MAPA_PALAVRAS_CHAVE_SEGMENTOS.get(segmento_escolhido, [])
+    if palavras:
+        condicoes_palavras = " OR ".join([
+            f"(razao_social ILIKE '%{p}%' OR nome_fantasia ILIKE '%{p}%')" for p in palavras
+        ])
+        clausulas.append(f"({condicoes_palavras})")
+
+    if clausulas:
+        return f"({' OR '.join(clausulas)})"
+    return None
 
 # ==========================================
 # 6. CONSULTAS OTIMIZADAS COM CACHE
@@ -853,7 +936,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             <div class="card-kpi border-ativo {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Parceiro Ativo</span><span class="kpi-icon">🤝</span></div>
                 <div class="kpi-value">{fmt_num(qtd_ativos)}</div>
-                <div class="kpi-sub">{pct(qtd_ativos):.1f}% da base</div>
+                <div class="kpi-sub">{pct(qtd_retorno := qtd_ativos):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
         if st.button(" ", key="card_pa", use_container_width=True):
@@ -963,6 +1046,12 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         where_clauses.append("(razao_social ILIKE :txt OR cnpj_formatado LIKE :txt)")
         params["txt"] = f"%{busca_texto.strip()}%"
 
+    # FILTRO EFETIVO DE SEGMENTO DIRETO NO SQL
+    if filtro_segmento_sel != "Todos":
+        cond_seg = montar_condicao_sql_segmento(filtro_segmento_sel, COLUNA_CNAE)
+        if cond_seg:
+            where_clauses.append(cond_seg)
+
     if filtro_setor_tipo_sel != "Todos":
         if filtro_setor_tipo_sel == "Público":
             where_clauses.append("(razao_social ILIKE '%publica%' OR razao_social ILIKE '%prefeitura%' OR razao_social ILIKE '%municip%' OR razao_social ILIKE '%federal%')")
@@ -982,7 +1071,8 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # ==========================================
     @st.dialog("📝 Ficha do Lead & Histórico de Interação", width="large")
     def abrir_modal_tratamento(cnpj):
-        query_emp = "SELECT * FROM empresas WHERE cnpj_formatado = :cnpj"
+        col_cnae_sel = f", {COLUNA_CNAE}" if COLUNA_CNAE else ""
+        query_emp = f"SELECT *{col_cnae_sel} FROM empresas WHERE cnpj_formatado = :cnpj"
         res_df = pd.read_sql(text(query_emp), engine, params={"cnpj": cnpj})
         
         if res_df.empty:
@@ -990,7 +1080,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             return
         row = res_df.iloc[0]
         cnpj_completo_exibicao = row.get('cnpj_formatado', 'Não Informado')
-        segmento_lead = classificar_segmento_registro(row)
+        segmento_lead = classificar_segmento_em_memoria(row)
         
         ddd = str(row.get('ddd1', '')).replace('.0', '').strip()
         tel = str(row.get('telefone1', '')).replace('.0', '').strip()
@@ -1128,7 +1218,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # ==========================================
     # TABELA PRINCIPAL DE EMPRESAS (RELAÇÃO)
     # ==========================================
-    # Busca colunas seguras existentes na tabela empresas
     col_cnae_sql = f", {COLUNA_CNAE}" if COLUNA_CNAE else ""
     query_dados = f"""
         SELECT 
@@ -1144,13 +1233,9 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     """
     df_tabela = pd.read_sql(text(query_dados), engine, params=params)
 
-    # Classifica a segmentação econômica em Python (garantia de compatibilidade)
+    # Preenche a coluna de segmentação na tabela exibida
     if not df_tabela.empty:
-        df_tabela['segmentacao'] = df_tabela.apply(classificar_segmento_registro, axis=1)
-        
-        # Filtro de Segmento CNAE selecionado
-        if filtro_segmento_sel != "Todos":
-            df_tabela = df_tabela[df_tabela['segmentacao'] == filtro_segmento_sel]
+        df_tabela['segmentacao'] = df_tabela.apply(classificar_segmento_em_memoria, axis=1)
 
     # Filtragem em memória por período semanal (se selecionado)
     if not df_tabela.empty and filtro_semana_sel != "Qualquer Período":
