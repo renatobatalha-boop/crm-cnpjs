@@ -43,7 +43,6 @@ st.markdown("""
     header {visibility: hidden;}
     [data-testid="collapsedControl"] {display: block;}
     
-    /* Fundo da aplicação */
     .stApp {
         background-color: #1a082e !important;
         background-image: radial-gradient(circle at 50% 0%, #321054 0%, #1a082e 100%) !important;
@@ -59,7 +58,6 @@ st.markdown("""
         max-width: 100% !important;
     }
 
-    /* Sidebar Dark CIEE */
     section[data-testid="stSidebar"] {
         background-color: #120422 !important;
         border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -68,7 +66,6 @@ st.markdown("""
         color: #E2E8F0 !important;
     }
 
-    /* Top Bar Executive (CIEE Colors) */
     .ciee-top-bar {
         background: linear-gradient(135deg, #0E0E76 0%, #8C0073 50%, #F76D4D 100%);
         border: 1px solid rgba(255, 255, 255, 0.15);
@@ -119,7 +116,6 @@ st.markdown("""
         box-shadow: 0 0 10px #10B981;
     }
 
-    /* Cards KPI 3D */
     .card-kpi {
         background: rgba(35, 15, 65, 0.7) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -134,7 +130,6 @@ st.markdown("""
         pointer-events: none;
     }
 
-    /* Gradientes Paleta CIEE */
     .border-total { 
         background: linear-gradient(135deg, #0E0E76 0%, #151552 100%) !important;
         border: 1px solid rgba(14, 14, 118, 0.5) !important;
@@ -155,7 +150,7 @@ st.markdown("""
         background: linear-gradient(135deg, #F76D4D 0%, #7e2f1e 100%) !important;
         border: 1px solid rgba(247, 109, 77, 0.5) !important;
     }
-    .border-semana {
+    .border-semana { 
         background: linear-gradient(135deg, #5b137d 0%, #29083d 100%) !important;
         border: 1px solid rgba(216, 180, 254, 0.4) !important;
     }
@@ -197,7 +192,6 @@ st.markdown("""
         justify-content: center;
     }
     
-    /* NÚMEROS DO DASHBOARD (BRANCO BRILHANTE E DESTACADOS) */
     .kpi-value {
         font-size: 34px !important;
         font-weight: 800 !important;
@@ -212,7 +206,6 @@ st.markdown("""
         color: rgba(255, 255, 255, 0.85);
     }
 
-    /* Labels dos Filtros */
     div[data-testid="stExpander"] label, 
     div[data-testid="stExpander"] label p, 
     div[data-testid="stExpander"] p,
@@ -225,7 +218,6 @@ st.markdown("""
         text-shadow: 0 1px 2px rgba(0,0,0,0.8) !important;
     }
 
-    /* Padronização dos inputs e selects (Fundo Escuro e Letra Branca) */
     div[data-baseweb="base-input"],
     div[data-baseweb="input"],
     .stTextInput > div > div,
@@ -268,19 +260,14 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* =======================================================
-       4. CORREÇÃO DA TABELA NATIVA DO STREAMLIT (NIVEL DE CANVAS)
-       ======================================================= */
-    /* Sobrescreve agressivamente os containers e elementos internos do canvas da tabela */
     div[data-testid="stDataFrame"], 
     div[data-testid="stDataFrame"] > div, 
     div[data-testid="stDataFrame"] [role="grid"],
     div[data-testid="stDataFrame"] canvas {
-        background-color: #1a082e !important; /* FORÇA FUNDO ROXO ESCURO */
-        color: #FFFFFF !important; /* FORÇA ESCRITA TOTALMENTE BRANCA */
+        background-color: #1a082e !important;
+        color: #FFFFFF !important;
     }
 
-    /* Alinha as linhas divisórias e bordas da tabela nativa com linhas finas brancas */
     div[data-testid="stDataFrame"] [role="columnheader"] {
         background-color: #120422 !important;
         color: #FFFFFF !important;
@@ -294,7 +281,6 @@ st.markdown("""
         border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
 
-    /* Container de expander roxo escuro contínuo */
     div[data-testid="stExpander"], .section-header-bar {
         background-color: rgba(25, 12, 45, 0.8) !important;
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -304,7 +290,6 @@ st.markdown("""
         -webkit-backdrop-filter: blur(12px);
     }
 
-    /* Botão Laranja CIEE */
     .stFormSubmitButton button, .stDownloadButton button {
         background: linear-gradient(135deg, #F76D4D 0%, #D02560 100%) !important;
         color: #FFFFFF !important;
@@ -319,7 +304,6 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(247, 109, 77, 0.45) !important;
     }
 
-    /* Camada de clique transparente nos cards */
     div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton {
         margin-top: -125px !important;
         height: 125px !important;
@@ -401,7 +385,76 @@ LISTA_OPERADORES_OFICIAIS = [
 ]
 
 # ==========================================
-# 5. MENU LATERAL (NAVEGAÇÃO)
+# 5. CONSULTAS OTIMIZADAS COM CACHE
+# ==========================================
+@st.cache_data(ttl=180)
+def carregar_kpis_base():
+    query = """
+        SELECT 
+            COUNT(*) AS total,
+            COUNT(*) FILTER (WHERE status_followup IS NULL 
+                                OR TRIM(status_followup) = '' 
+                                OR status_followup = 'Lead Não Contatado'
+                                OR status_followup NOT IN ('Lead Contatado', 'Contato Futuro', 'Lead Convertido', 'Parceiro Ativo', 'Proposta Negada')) AS nao_contatados,
+            COUNT(*) FILTER (WHERE status_followup = 'Lead Contatado') AS contatados,
+            COUNT(*) FILTER (WHERE status_followup = 'Contato Futuro') AS futuros,
+            COUNT(*) FILTER (WHERE status_followup = 'Lead Convertido') AS convertidos,
+            COUNT(*) FILTER (WHERE status_followup = 'Parceiro Ativo') AS ativos,
+            COUNT(*) FILTER (WHERE status_followup = 'Proposta Negada') AS negados
+        FROM empresas
+    """
+    try:
+        with engine.connect() as conn:
+            row = conn.execute(text(query)).fetchone()
+            return {
+                "total": row.total or 0,
+                "nao_contatados": row.nao_contatados or 0,
+                "contatados": row.contatados or 0,
+                "futuros": row.futuros or 0,
+                "convertidos": row.convertidos or 0,
+                "ativos": row.ativos or 0,
+                "negados": row.negados or 0,
+            }
+    except Exception:
+        return {"total": 0, "nao_contatados": 0, "contatados": 0, "futuros": 0, "convertidos": 0, "ativos": 0, "negados": 0}
+
+@st.cache_data(ttl=300)
+def calcular_contatos_semana():
+    hoje = datetime.now()
+    inicio_semana = hoje - timedelta(days=hoje.weekday())
+    inicio_semana = inicio_semana.replace(hour=0, minute=0, second=0, microsecond=0)
+    contatos = 0
+    try:
+        with engine.connect() as conn:
+            df_obs = pd.read_sql(text("SELECT observacoes FROM empresas WHERE observacoes IS NOT NULL AND TRIM(observacoes) != ''"), conn)
+            for obs in df_obs['observacoes']:
+                datas = extrair_datas_observacoes(obs)
+                for d in datas:
+                    if d >= inicio_semana:
+                        contatos += 1
+    except Exception:
+        contatos = 0
+    return contatos
+
+@st.cache_data(ttl=60)
+def get_responsaveis_cadastrados():
+    try:
+        with engine.connect() as conn:
+            df = pd.read_sql(text("""
+                SELECT DISTINCT responsavel_tratamento 
+                FROM empresas 
+                WHERE responsavel_tratamento IS NOT NULL 
+                  AND TRIM(responsavel_tratamento) != ''
+            """), conn)
+            banco_lista = df["responsavel_tratamento"].dropna().tolist()
+            return ["Todos", "Sem Responsável"] + sorted(list(set(banco_lista + LISTA_OPERADORES_OFICIAIS)))
+    except Exception:
+        return ["Todos", "Sem Responsável"] + LISTA_OPERADORES_OFICIAIS
+
+lista_responsaveis_filtro = get_responsaveis_cadastrados()
+
+# ==========================================
+# 6. MENU LATERAL (NAVEGAÇÃO)
 # ==========================================
 with st.sidebar:
     st.markdown("""
@@ -436,26 +489,6 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
 
-# ==========================================
-# 6. LISTA DE RESPONSÁVEIS
-# ==========================================
-@st.cache_data(ttl=60)
-def get_responsaveis_cadastrados():
-    try:
-        with engine.connect() as conn:
-            df = pd.read_sql(text("""
-                SELECT DISTINCT responsavel_tratamento 
-                FROM empresas 
-                WHERE responsavel_tratamento IS NOT NULL 
-                  AND TRIM(responsavel_tratamento) != ''
-            """), conn)
-            banco_lista = df["responsavel_tratamento"].dropna().tolist()
-            return ["Todos", "Sem Responsável"] + sorted(list(set(banco_lista + LISTA_OPERADORES_OFICIAIS)))
-    except Exception:
-        return ["Todos", "Sem Responsável"] + LISTA_OPERADORES_OFICIAIS
-
-lista_responsaveis_filtro = get_responsaveis_cadastrados()
-
 # Cabeçalho Principal (Paleta CIEE)
 st.markdown(f"""
     <div class="ciee-top-bar">
@@ -477,59 +510,21 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     if "filtro_status_clique" not in st.session_state:
         st.session_state["filtro_status_clique"] = "Todos"
 
-    # Consulta dos KPIs Gerais
-    query_kpis_geral = """
-        SELECT 
-            COUNT(*) AS total,
-            COUNT(*) FILTER (WHERE status_followup IS NULL 
-                                OR TRIM(status_followup) = '' 
-                                OR status_followup = 'Lead Não Contatado'
-                                OR status_followup NOT IN ('Lead Contatado', 'Contato Futuro', 'Lead Convertido', 'Parceiro Ativo', 'Proposta Negada')) AS nao_contatados,
-            COUNT(*) FILTER (WHERE status_followup = 'Lead Contatado') AS contatados,
-            COUNT(*) FILTER (WHERE status_followup = 'Contato Futuro') AS futuros,
-            COUNT(*) FILTER (WHERE status_followup = 'Lead Convertido') AS convertidos,
-            COUNT(*) FILTER (WHERE status_followup = 'Parceiro Ativo') AS ativos,
-            COUNT(*) FILTER (WHERE status_followup = 'Proposta Negada') AS negados
-        FROM empresas
-    """
-    try:
-        with engine.connect() as conn:
-            kpi_res = conn.execute(text(query_kpis_geral)).fetchone()
-        total_cnpjs = kpi_res.total or 0
-        qtd_nao_contatados = kpi_res.nao_contatados or 0
-        qtd_contatados = kpi_res.contatados or 0
-        qtd_futuros = kpi_res.futuros or 0
-        qtd_convertidos = kpi_res.convertidos or 0
-        qtd_ativos = kpi_res.ativos or 0
-        qtd_negados = kpi_res.negados or 0
-    except Exception:
-        total_cnpjs = qtd_nao_contatados = qtd_contatados = qtd_futuros = qtd_convertidos = qtd_ativos = qtd_negados = 0
+    kpis = carregar_kpis_base()
+    total_cnpjs = kpis["total"]
+    qtd_nao_contatados = kpis["nao_contatados"]
+    qtd_contatados = kpis["contatados"]
+    qtd_futuros = kpis["futuros"]
+    qtd_convertidos = kpis["convertidos"]
+    qtd_ativos = kpis["ativos"]
+    qtd_negados = kpis["negados"]
 
     pct = lambda val: (val / total_cnpjs * 100) if total_cnpjs > 0 else 0.0
     status_atual = st.session_state["filtro_status_clique"]
 
-    # ==========================================
-    # CÁLCULO DE CONTATOS POR SEMANA
-    # ==========================================
-    hoje = datetime.now()
-    inicio_semana_atual = hoje - timedelta(days=hoje.weekday())
-    inicio_semana_atual = inicio_semana_atual.replace(hour=0, minute=0, second=0, microsecond=0)
+    contatos_esta_semana = calcular_contatos_semana()
 
-    contatos_esta_semana = 0
-    try:
-        with engine.connect() as conn:
-            df_obs = pd.read_sql(text("SELECT observacoes FROM empresas WHERE observacoes IS NOT NULL AND TRIM(observacoes) != ''"), conn)
-            for obs in df_obs['observacoes']:
-                datas = extrair_datas_observacoes(obs)
-                for d in datas:
-                    if d >= inicio_semana_atual:
-                        contatos_esta_semana += 1
-    except Exception:
-        contatos_esta_semana = 0
-
-    # ==========================================
-    # DASHBOARD DE MÉTRICAS 3D (COM 8 CARDS)
-    # ==========================================
+    # DASHBOARD DE MÉTRICAS (8 CARDS)
     c_t, c_nc, c_c, c_cf, c_conv, c_sem, c_pa, c_pn = st.columns(8)
     
     with c_t:
@@ -635,7 +630,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     st.caption("👆 **Interatividade:** Selecione qualquer card de métrica para filtrar os registros instantaneamente.")
 
     # ==========================================
-    # FILTROS DE BUSCA (NEON GLASS DESIGN)
+    # FILTROS DE BUSCA (COM CEP INCLUÍDO)
     # ==========================================
     with st.expander("🎛️ FILTROS AVANÇADOS DE SELEÇÃO & PERÍODO SEMANAL", expanded=True):
         col_f1, col_f2, col_f3, col_f4 = st.columns(4)
@@ -658,7 +653,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 index=0
             )
 
-        col_f5, col_f6, col_f7, col_f8 = st.columns(4)
+        col_f5, col_f6, col_f7, col_f8, col_f9 = st.columns(5)
         with col_f5:
             filtro_segmentacao_sel = st.selectbox("Segmentação de Atuação:", ["Todos", "Varejo", "Outros Serviços"], index=0)
         with col_f6:
@@ -666,6 +661,8 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         with col_f7:
             busca_bairro = st.text_input("Bairro ou Região:", placeholder="Ex: Centro, Pinheiros...")
         with col_f8:
+            busca_cep = st.text_input("CEP:", placeholder="Ex: 01310 ou 01310-100")
+        with col_f9:
             busca_texto = st.text_input("Razão Social ou CNPJ:", placeholder="Digite nome ou números...")
 
         col_p1, col_p2 = st.columns(2)
@@ -679,6 +676,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # Montagem Dinâmica de WHERE SQL
     where_clauses = ["1=1"]
     params = {}
+
     if filtro_status_sel != "Todos":
         if filtro_status_sel == "Lead Não Contatado":
             where_clauses.append("""
@@ -705,6 +703,11 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     if busca_bairro.strip():
         where_clauses.append("bairro ILIKE :bairro")
         params["bairro"] = f"%{busca_bairro.strip()}%"
+
+    if busca_cep.strip():
+        cep_limpo = re.sub(r'\D', '', busca_cep.strip())
+        where_clauses.append("REPLACE(REPLACE(cep, '-', ''), '.', '') LIKE :cep")
+        params["cep"] = f"{cep_limpo}%"
 
     if busca_texto.strip():
         where_clauses.append("(razao_social ILIKE :txt OR cnpj_formatado LIKE :txt)")
@@ -828,16 +831,16 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             nova_nota = st.text_area(
                 "✍️ Registrar Detalhes de Nova Interação:",
                 placeholder="Anotar resumo de ligação, retorno, decisor contactado...",
-                height=90
+                height=90,
+                key=f"nova_nota_{cnpj}"
             )
             
-            is_admin = str(st.session_state["usuario_ativo"]).strip().upper() == "ALINE CRUZ"
+            is_admin = str(st.session_state.get("usuario_ativo", "")).strip().upper() == "ALINE CRUZ"
             if is_admin:
-                obs_manual_expander = st.expander("🔧 Editar histórico completo (Administrador)")
-                with obs_manual_expander:
-                    obs_manual = st.text_area("Histórico Bruto:", value=obs_banco, height=80)
+                obs_manual = st.text_area("Histórico Bruto (Modo Administrador):", value=obs_banco, height=80, key=f"admin_obs_{cnpj}")
             else:
                 obs_manual = obs_banco
+                
             btn_salvar = st.form_submit_button("💾 Salvar Tratamento", use_container_width=True)
             
             if btn_salvar:
@@ -870,7 +873,8 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                             "obs": obs_final,
                             "cnpj": cnpj
                         })
-                    st.cache_data.clear()
+                    carregar_kpis_base.clear()
+                    calcular_contatos_semana.clear()
                     st.success("✅ Lead atualizado com sucesso!")
                     st.rerun()
                 except Exception as err:
@@ -892,26 +896,28 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             END AS setor_tipo,
             COALESCE(bairro, 'Não Informado') AS bairro, cep, observacoes
         FROM empresas {sql_where}
-        ORDER BY 
-            CASE WHEN (razao_social ILIKE '%comercio%' OR razao_social ILIKE '%varejo%' OR nome_fantasia ILIKE '%loja%') THEN 0 ELSE 1 END,
-            cnpj_formatado
+        ORDER BY cnpj_formatado ASC
         LIMIT {registros_por_pagina} OFFSET {offset_val}
     """
     df_tabela = pd.read_sql(text(query_dados), engine, params=params)
 
-    # Filtragem em memória por período semanal
+    # Filtragem em memória por período semanal (se selecionado)
     if not df_tabela.empty and filtro_semana_sel != "Qualquer Período":
+        hoje_ref = datetime.now()
+        inicio_sem_ref = hoje_ref - timedelta(days=hoje_ref.weekday())
+        inicio_sem_ref = inicio_sem_ref.replace(hour=0, minute=0, second=0, microsecond=0)
+
         def esta_no_periodo(obs):
             datas = extrair_datas_observacoes(obs)
             if not datas:
                 return False
             data_mais_recente = max(datas)
             if filtro_semana_sel == "Contatados Esta Semana":
-                return data_mais_recente >= inicio_semana_atual
+                return data_mais_recente >= inicio_sem_ref
             elif filtro_semana_sel == "Contatados nos Últimos 14 Dias":
-                return data_mais_recente >= (hoje - timedelta(days=14))
+                return data_mais_recente >= (hoje_ref - timedelta(days=14))
             elif filtro_semana_sel == "Contatados no Último Mês":
-                return data_mais_recente >= (hoje - timedelta(days=30))
+                return data_mais_recente >= (hoje_ref - timedelta(days=30))
             return True
 
         df_tabela = df_tabela[df_tabela['observacoes'].apply(esta_no_periodo)]
@@ -938,7 +944,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     else:
         st.caption("👉 **Ação:** Toque em qualquer linha da tabela para abrir o modal do lead e registrar follow-ups.")
         
-        # Renderização da tabela original Streamlit, agora estilizada em roxo escuro com fontes brancas nativas
         event = st.dataframe(
             df_tabela[[
                 'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
@@ -990,7 +995,6 @@ else:
     except Exception:
         df_gestao = pd.DataFrame()
 
-    # Gráfico de Contatos por Semana
     st.markdown("#### 📅 Volume de Interações Realizadas por Semana")
     contatos_semanais = {}
     if not df_gestao.empty:
@@ -1038,4 +1042,3 @@ else:
             st.bar_chart(df_recusas.set_index("Motivo"), color="#D02560")
         else:
             st.caption("Sem dados de recusa informados.")
-
