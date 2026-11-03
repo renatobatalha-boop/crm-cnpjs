@@ -487,7 +487,6 @@ LISTA_OPERADORES_OFICIAIS = [
     "VIVIANE VENAGLIA", "WILLIAM LIMA"
 ]
 
-# 21 SEÇÕES OFICIAIS CNAE
 SECOES_CNAE_LISTA = [
     "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura",
     "Indústrias Extrativas",
@@ -512,50 +511,127 @@ SECOES_CNAE_LISTA = [
     "Organismos Internacionais e Outras Instituições Extraterritoriais"
 ]
 
-# Expressão SQL que classifica a empresa com base no código CNAE (ou por palavras-chave caso a coluna cnae_fiscal não contenha código)
-SQL_SEGMENTO_CNAE_CASE = """
-    CASE 
-        WHEN NULLIF(REGEXP_REPLACE(COALESCE(cnae_fiscal::text, ''), '\\D', '', 'g'), '') IS NOT NULL THEN
-            CASE 
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 1 AND 3 THEN 'Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 5 AND 9 THEN 'Indústrias Extrativas'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 10 AND 33 THEN 'Indústrias de Transformação'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 35 THEN 'Eletricidade e Gás'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 36 AND 39 THEN 'Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 41 AND 43 THEN 'Construção'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 45 AND 47 THEN 'Comércio; Reparação de Veículos Automotores e Motocicletas'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 49 AND 53 THEN 'Transporte, Armazenamento e Correio'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 55 AND 56 THEN 'Alojamento e Alimentação'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 58 AND 63 THEN 'Informação e Comunicação'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 64 AND 66 THEN 'Atividades Financeiras, de Seguros e Serviços Relacionados'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 68 THEN 'Atividades Imobiliárias'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 69 AND 75 THEN 'Atividades Profissionais, Científicas e Técnicas'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 77 AND 82 THEN 'Atividades Administrativas e Serviços Complementares'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 84 THEN 'Administração Pública, Defesa e Seguridade Social'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 85 THEN 'Educação'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 86 AND 88 THEN 'Saúde Humana e Serviços Sociais'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 90 AND 93 THEN 'Artes, Cultura, Esporte e Recreação'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 94 AND 96 THEN 'Outras Atividades de Serviços'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 97 THEN 'Serviços Domésticos'
-                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 99 THEN 'Organismos Internacionais e Outras Instituições Extraterritoriais'
-                ELSE 'Outras Atividades de Serviços'
-            END
-        ELSE
-            CASE 
-                WHEN razao_social ILIKE '%comercio%' OR razao_social ILIKE '%varejo%' OR razao_social ILIKE '%loja%' OR nome_fantasia ILIKE '%loja%' OR nome_fantasia ILIKE '%supermercado%' THEN 'Comércio; Reparação de Veículos Automotores e Motocicletas'
-                WHEN razao_social ILIKE '%publica%' OR razao_social ILIKE '%prefeitura%' OR razao_social ILIKE '%municip%' OR razao_social ILIKE '%federal%' THEN 'Administração Pública, Defesa e Seguridade Social'
-                WHEN razao_social ILIKE '%transporte%' OR razao_social ILIKE '%logistica%' THEN 'Transporte, Armazenamento e Correio'
-                WHEN razao_social ILIKE '%escola%' OR razao_social ILIKE '%colegio%' OR razao_social ILIKE '%educac%' THEN 'Educação'
-                WHEN razao_social ILIKE '%hospital%' OR razao_social ILIKE '%clinica%' OR razao_social ILIKE '%medico%' THEN 'Saúde Humana e Serviços Sociais'
-                WHEN razao_social ILIKE '%engenharia%' OR razao_social ILIKE '%construc%' THEN 'Construção'
-                WHEN razao_social ILIKE '%alimento%' OR razao_social ILIKE '%restaurante%' OR razao_social ILIKE '%hotel%' THEN 'Alojamento e Alimentação'
-                ELSE 'Outras Atividades de Serviços'
-            END
-    END
-"""
+# ==========================================
+# 5. DETECÇÃO INTELIGENTE DA COLUNA DE CNAE
+# ==========================================
+@st.cache_data(ttl=3600)
+def obter_coluna_cnae_disponivel():
+    """Identifica o nome real da coluna de CNAE na tabela sem causar erro SQL."""
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'empresas'
+            """)
+            colunas = [r[0].lower() for r in conn.execute(query).fetchall()]
+            
+            candidatos = [
+                'cnae_fiscal', 'cnae_principal', 'cnae_fiscal_principal',
+                'cnae', 'codigo_cnae', 'cnae_primario', 'atividade_principal'
+            ]
+            for cand in candidatos:
+                if cand in colunas:
+                    return cand
+            return None
+    except Exception:
+        return None
+
+COLUNA_CNAE = obter_coluna_cnae_disponivel()
+
+def classificar_segmento_registro(row):
+    """Classifica a empresa em um dos 21 segmentos oficiais do CNAE."""
+    # 1. Se existir coluna de código CNAE
+    if COLUNA_CNAE and COLUNA_CNAE in row and pd.notnull(row[COLUNA_CNAE]):
+        val = str(row[COLUNA_CNAE])
+        digitos = re.sub(r'\D', '', val)
+        if len(digitos) >= 2:
+            div = int(digitos[:2])
+            if 1 <= div <= 3:
+                return "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura"
+            elif 5 <= div <= 9:
+                return "Indústrias Extrativas"
+            elif 10 <= div <= 33:
+                return "Indústrias de Transformação"
+            elif div == 35:
+                return "Eletricidade e Gás"
+            elif 36 <= div <= 39:
+                return "Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação"
+            elif 41 <= div <= 43:
+                return "Construção"
+            elif 45 <= div <= 47:
+                return "Comércio; Reparação de Veículos Automotores e Motocicletas"
+            elif 49 <= div <= 53:
+                return "Transporte, Armazenamento e Correio"
+            elif 55 <= div <= 56:
+                return "Alojamento e Alimentação"
+            elif 58 <= div <= 63:
+                return "Informação e Comunicação"
+            elif 64 <= div <= 66:
+                return "Atividades Financeiras, de Seguros e Serviços Relacionados"
+            elif div == 68:
+                return "Atividades Imobiliárias"
+            elif 69 <= div <= 75:
+                return "Atividades Profissionais, Científicas e Técnicas"
+            elif 77 <= div <= 82:
+                return "Atividades Administrativas e Serviços Complementares"
+            elif div == 84:
+                return "Administração Pública, Defesa e Seguridade Social"
+            elif div == 85:
+                return "Educação"
+            elif 86 <= div <= 88:
+                return "Saúde Humana e Serviços Sociais"
+            elif 90 <= div <= 93:
+                return "Artes, Cultura, Esporte e Recreação"
+            elif 94 <= div <= 96:
+                return "Outras Atividades de Serviços"
+            elif div == 97:
+                return "Serviços Domésticos"
+            elif div == 99:
+                return "Organismos Internacionais e Outras Instituições Extraterritoriais"
+
+    # 2. Classificação Heurística por Nome / Razão Social
+    texto = (str(row.get('razao_social', '')) + " " + str(row.get('nome_fantasia', ''))).lower()
+    
+    if any(k in texto for k in ['comercio', 'varejo', 'loja', 'supermercado', 'magazine', 'mercado', 'distribuidora', 'auto pecas']):
+        return "Comércio; Reparação de Veículos Automotores e Motocicletas"
+    elif any(k in texto for k in ['transporte', 'logistica', 'frete', 'entregas', 'armazem', 'expresso']):
+        return "Transporte, Armazenamento e Correio"
+    elif any(k in texto for k in ['construc', 'engenharia', 'empreendimentos', 'obras', 'reforma', 'instalac']):
+        return "Construção"
+    elif any(k in texto for k in ['escola', 'colegio', 'educac', 'ensino', 'cursos', 'faculdade', 'universidade', 'treinamento']):
+        return "Educação"
+    elif any(k in texto for k in ['saude', 'medico', 'clinica', 'odontolog', 'hospital', 'laboratorio', 'psicolog', 'terapia']):
+        return "Saúde Humana e Serviços Sociais"
+    elif any(k in texto for k in ['software', 'tecnologia', 'informatica', 'sistemas', 'internet', 'comunicacao', 'telecom']):
+        return "Informação e Comunicação"
+    elif any(k in texto for k in ['restaurante', 'alimento', 'bar', 'lanchonete', 'hotel', 'pousada', 'padaria', 'buffet']):
+        return "Alojamento e Alimentação"
+    elif any(k in texto for k in ['industria', 'fabrica', 'manufatura', 'metalurgica', 'textil', 'confeccao']):
+        return "Indústrias de Transformação"
+    elif any(k in texto for k in ['imobiliaria', 'imoveis', 'locacao', 'condominio', 'patrimonial']):
+        return "Atividades Imobiliárias"
+    elif any(k in texto for k in ['banco', 'financeira', 'credito', 'seguros', 'investimento', 'capital']):
+        return "Atividades Financeiras, de Seguros e Serviços Relacionados"
+    elif any(k in texto for k in ['advocacia', 'contabil', 'consultoria', 'pericia', 'arquitetura', 'pesquisa']):
+        return "Atividades Profissionais, Científicas e Técnicas"
+    elif any(k in texto for k in ['seguranca', 'vigilancia', 'portaria', 'limpeza', 'terceirizac', 'recursos humanos']):
+        return "Atividades Administrativas e Serviços Complementares"
+    elif any(k in texto for k in ['publica', 'prefeitura', 'municip', 'federal', 'secretaria', 'tribunal', 'governo']):
+        return "Administração Pública, Defesa e Seguridade Social"
+    elif any(k in texto for k in ['energia', 'eletric', 'gas', 'solar', 'biomassa']):
+        return "Eletricidade e Gás"
+    elif any(k in texto for k in ['ambiente', 'saneamento', 'residuo', 'reciclagem', 'tratamento de agua']):
+        return "Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação"
+    elif any(k in texto for k in ['academia', 'esporte', 'arte', 'teatro', 'musica', 'producoes', 'cinema', 'show']):
+        return "Artes, Cultura, Esporte e Recreação"
+    elif any(k in texto for k in ['agro', 'fazenda', 'pecuaria', 'pesca', 'agricola', 'cultivo', 'reflorest']):
+        return "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura"
+    else:
+        return "Outras Atividades de Serviços"
 
 # ==========================================
-# 5. CONSULTAS OTIMIZADAS COM CACHE
+# 6. CONSULTAS OTIMIZADAS COM CACHE
 # ==========================================
 @st.cache_data(ttl=180)
 def carregar_kpis_base():
@@ -624,7 +700,7 @@ def get_responsaveis_cadastrados():
 lista_responsaveis_filtro = get_responsaveis_cadastrados()
 
 # ==========================================
-# 6. MENU LATERAL (NAVEGAÇÃO)
+# 7. MENU LATERAL (NAVEGAÇÃO)
 # ==========================================
 with st.sidebar:
     st.markdown("""
@@ -887,10 +963,6 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         where_clauses.append("(razao_social ILIKE :txt OR cnpj_formatado LIKE :txt)")
         params["txt"] = f"%{busca_texto.strip()}%"
 
-    if filtro_segmento_sel != "Todos":
-        where_clauses.append(f"({SQL_SEGMENTO_CNAE_CASE}) = :seg_sel")
-        params["seg_sel"] = filtro_segmento_sel
-
     if filtro_setor_tipo_sel != "Todos":
         if filtro_setor_tipo_sel == "Público":
             where_clauses.append("(razao_social ILIKE '%publica%' OR razao_social ILIKE '%prefeitura%' OR razao_social ILIKE '%municip%' OR razao_social ILIKE '%federal%')")
@@ -910,12 +982,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # ==========================================
     @st.dialog("📝 Ficha do Lead & Histórico de Interação", width="large")
     def abrir_modal_tratamento(cnpj):
-        query_emp = f"""
-            SELECT *, 
-                ({SQL_SEGMENTO_CNAE_CASE}) AS segmento_cnae
-            FROM empresas 
-            WHERE cnpj_formatado = :cnpj
-        """
+        query_emp = "SELECT * FROM empresas WHERE cnpj_formatado = :cnpj"
         res_df = pd.read_sql(text(query_emp), engine, params={"cnpj": cnpj})
         
         if res_df.empty:
@@ -923,6 +990,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             return
         row = res_df.iloc[0]
         cnpj_completo_exibicao = row.get('cnpj_formatado', 'Não Informado')
+        segmento_lead = classificar_segmento_registro(row)
         
         ddd = str(row.get('ddd1', '')).replace('.0', '').strip()
         tel = str(row.get('telefone1', '')).replace('.0', '').strip()
@@ -947,7 +1015,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 </div>
                 <div style="font-size: 13px; color: #e2e8f0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px;">
                     <div><span style="color: #94a3b8; font-weight: 600;">Razão Social:</span><br><b>{row.get('razao_social', '-')}</b></div>
-                    <div><span style="color: #94a3b8; font-weight: 600;">Segmento Econômico:</span><br><b>{row.get('segmento_cnae', '-')}</b></div>
+                    <div><span style="color: #94a3b8; font-weight: 600;">Segmento CNAE:</span><br><b>{segmento_lead}</b></div>
                     <div><span style="color: #94a3b8; font-weight: 600;">Porte Empresarial:</span><br><b>{row.get('porte_empresa', 'Não Informado')}</b></div>
                     <div><span style="color: #94a3b8; font-weight: 600;">Telefone de Contato:</span><br><b>📞 {tel_fmt}</b></div>
                     <div><span style="color: #94a3b8; font-weight: 600;">E-mail Cadastrado:</span><br><b>✉️ {email_fmt}</b></div>
@@ -1060,20 +1128,29 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # ==========================================
     # TABELA PRINCIPAL DE EMPRESAS (RELAÇÃO)
     # ==========================================
+    # Busca colunas seguras existentes na tabela empresas
+    col_cnae_sql = f", {COLUNA_CNAE}" if COLUNA_CNAE else ""
     query_dados = f"""
         SELECT 
             cnpj_formatado, razao_social, nome_fantasia, porte_empresa,
-            ({SQL_SEGMENTO_CNAE_CASE}) AS segmentacao,
             CASE 
                 WHEN razao_social ILIKE '%publica%' OR razao_social ILIKE '%prefeitura%' OR razao_social ILIKE '%municip%' OR razao_social ILIKE '%federal%' THEN 'Público'
                 ELSE 'Privado'
             END AS setor_tipo,
-            COALESCE(bairro, 'Não Informado') AS bairro, cep, observacoes
+            COALESCE(bairro, 'Não Informado') AS bairro, cep, observacoes{col_cnae_sql}
         FROM empresas {sql_where}
         ORDER BY cnpj_formatado ASC
         LIMIT {registros_por_pagina} OFFSET {offset_val}
     """
     df_tabela = pd.read_sql(text(query_dados), engine, params=params)
+
+    # Classifica a segmentação econômica em Python (garantia de compatibilidade)
+    if not df_tabela.empty:
+        df_tabela['segmentacao'] = df_tabela.apply(classificar_segmento_registro, axis=1)
+        
+        # Filtro de Segmento CNAE selecionado
+        if filtro_segmento_sel != "Todos":
+            df_tabela = df_tabela[df_tabela['segmentacao'] == filtro_segmento_sel]
 
     # Filtragem em memória por período semanal (se selecionado)
     if not df_tabela.empty and filtro_semana_sel != "Qualquer Período":
@@ -1099,12 +1176,14 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # Titulo e Botão de Exportação Alinhados
     col_titulo_tab, col_export = st.columns([3, 2])
     with col_titulo_tab:
-        status_indicador = f" • Filtro ativo: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
+        status_indicador = f" • [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
+        seg_indicador = f" • [{filtro_segmento_sel}]" if filtro_segmento_sel != "Todos" else ""
         periodo_indicador = f" • [{filtro_semana_sel}]" if filtro_semana_sel != "Qualquer Período" else ""
-        st.markdown(f"#### 📋 Relação de Prospecção ({fmt_num(len(df_tabela))} CNPJs exibidos{status_indicador}{periodo_indicador})")
+        st.markdown(f"#### 📋 Relação de Prospecção ({fmt_num(len(df_tabela))} CNPJs exibidos{status_indicador}{seg_indicador}{periodo_indicador})")
     with col_export:
         if not df_tabela.empty:
-            csv_data = df_tabela.drop(columns=['observacoes'], errors='ignore').to_csv(index=False).encode("utf-8-sig")
+            cols_export = [c for c in df_tabela.columns if c not in ['observacoes', COLUNA_CNAE]]
+            csv_data = df_tabela[cols_export].to_csv(index=False).encode("utf-8-sig")
             st.download_button(
                 label="📥 Exportar Dados Atuais (CSV)",
                 data=csv_data,
