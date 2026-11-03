@@ -64,7 +64,7 @@ st.markdown("""
         border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
     section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label {
-        color: #E2E8F0 !important;
+        color: #FFFFFF !important;
     }
 
     /* Top Bar Executive */
@@ -208,22 +208,25 @@ st.markdown("""
         color: rgba(255, 255, 255, 0.85);
     }
 
-    /* Labels dos Filtros da tela principal */
-    div[data-testid="stExpander"] label, 
-    div[data-testid="stExpander"] label p, 
-    div[data-testid="stExpander"] p,
+    /* ========================================================
+       FORÇA TOTAL: FUNDO PRETO E TEXTO BRANCO EM TODOS OS FILTROS
+       ======================================================== */
+    /* Labels dos Filtros */
+    label, 
+    label p, 
     .stSelectbox label, 
     .stTextInput label, 
-    .stNumberInput label {
+    .stNumberInput label,
+    .stTextArea label {
         color: #FFFFFF !important;
         font-weight: 700 !important;
         font-size: 13px !important;
         text-shadow: 0 1px 2px rgba(0,0,0,0.8) !important;
     }
 
-    /* Expander dos Filtros */
+    /* Expander de Filtros: Container Escuro Integrado */
     div[data-testid="stExpander"] {
-        background-color: rgba(18, 4, 34, 0.9) !important;
+        background-color: rgba(18, 4, 34, 0.92) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         border-radius: 16px !important;
     }
@@ -241,17 +244,36 @@ st.markdown("""
         background-color: transparent !important;
     }
 
-    /* Inputs de Texto e Número da tela principal (Fundo Preto) */
+    /* 1. SELECTBOXES (Fundo Preto e Texto Branco) */
+    [data-testid="stSelectbox"] > div > div,
+    [data-testid="stSelectbox"] div[data-baseweb="select"],
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    div[data-baseweb="select"],
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="select"] [aria-expanded] {
+        background-color: #000000 !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        color: #FFFFFF !important;
+        border-radius: 10px !important;
+    }
+    div[data-baseweb="select"] * {
+        background-color: transparent !important;
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+    }
+    div[data-baseweb="select"] svg {
+        fill: #FFFFFF !important;
+    }
+
+    /* 2. TEXT INPUTS E NUMBER INPUTS (Fundo Preto e Texto Branco) */
+    [data-testid="stTextInput"] > div > div,
+    [data-testid="stNumberInput"] > div > div,
     div[data-baseweb="base-input"],
-    div[data-baseweb="input"],
-    .stTextInput > div > div,
-    .stNumberInput > div > div,
-    .stNumberInput [data-baseweb="input"] {
+    div[data-baseweb="input"] {
         background-color: #000000 !important;
         border: 1px solid rgba(255, 255, 255, 0.25) !important;
         border-radius: 10px !important;
     }
-
     .stTextInput input,
     .stNumberInput input,
     div[data-baseweb="base-input"] input,
@@ -261,45 +283,25 @@ st.markdown("""
         -webkit-text-fill-color: #FFFFFF !important;
         font-weight: 600 !important;
     }
-
     .stTextInput input::placeholder {
         color: rgba(255, 255, 255, 0.45) !important;
         -webkit-text-fill-color: rgba(255, 255, 255, 0.45) !important;
     }
-
     .stNumberInput button {
         background-color: #0b0214 !important;
         color: #FFFFFF !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
 
-    /* Selectboxes da tela principal (Fundo Preto) */
-    div[data-baseweb="select"],
-    div[data-baseweb="select"] > div,
-    div[data-baseweb="select"] [aria-expanded] {
-        background-color: #000000 !important;
-        border-color: rgba(255, 255, 255, 0.25) !important;
-        color: #FFFFFF !important;
-        border-radius: 10px !important;
-    }
-    div[data-baseweb="select"] span,
-    div[data-baseweb="select"] div[value] {
-        color: #FFFFFF !important;
-        font-weight: 600 !important;
-    }
-    div[data-baseweb="select"] svg {
-        fill: #FFFFFF !important;
-    }
-
-    /* Menu Dropdown suspenso */
+    /* 3. MENU DROPDOWN SUSPENSO (Ao clicar nos selects) */
     ul[data-baseweb="menu"],
     div[data-baseweb="popover"],
     div[data-baseweb="popover"] > div {
-        background-color: #0a0114 !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background-color: #000000 !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
     }
     li[data-baseweb="menu-item"] {
-        background-color: #0a0114 !important;
+        background-color: #000000 !important;
         color: #FFFFFF !important;
     }
     li[data-baseweb="menu-item"]:hover {
@@ -308,14 +310,15 @@ st.markdown("""
     }
 
     /* ========================================================
-       MODAL DE TRATAMENTO (@st.dialog) - TEMA ESCURO E PRETO
+       MODAL DE TRATAMENTO (@st.dialog) - FUNDO TOTALMENTE ESCURO
        ======================================================== */
     div[role="dialog"],
-    div[data-testid="stModal"] > div {
+    div[data-testid="stModal"] > div,
+    div[data-testid="stDialog"] > div {
         background-color: #120422 !important;
-        background-image: radial-gradient(circle at 50% 0%, #260a45 0%, #120422 100%) !important;
+        background-image: radial-gradient(circle at 50% 0%, #29083d 0%, #120422 100%) !important;
         color: #FFFFFF !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
         border-radius: 18px !important;
     }
 
@@ -333,35 +336,36 @@ st.markdown("""
     div[role="dialog"] span,
     div[role="dialog"] .stMarkdown {
         color: #FFFFFF !important;
-        font-weight: 600 !important;
     }
 
+    /* Inputs e Selects dentro do modal em fundo preto absoluto */
     div[role="dialog"] div[data-baseweb="select"],
     div[role="dialog"] div[data-baseweb="select"] > div,
     div[role="dialog"] div[data-baseweb="select"] [aria-expanded] {
         background-color: #000000 !important;
-        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
         color: #FFFFFF !important;
         border-radius: 10px !important;
     }
-    div[role="dialog"] div[data-baseweb="select"] span {
+    div[role="dialog"] div[data-baseweb="select"] * {
+        background-color: transparent !important;
         color: #FFFFFF !important;
     }
     div[role="dialog"] div[data-baseweb="select"] svg {
         fill: #FFFFFF !important;
     }
 
+    /* TextAreas no Modal */
     div[role="dialog"] div[data-baseweb="textarea"],
     div[role="dialog"] div[data-baseweb="textarea"] textarea,
-    div[role="dialog"] div[data-baseweb="base-input"],
-    div[role="dialog"] div[data-baseweb="input"] input {
+    div[role="dialog"] textarea,
+    div[role="dialog"] input {
         background-color: #000000 !important;
         color: #FFFFFF !important;
         -webkit-text-fill-color: #FFFFFF !important;
-        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
         border-radius: 10px !important;
     }
-
     div[role="dialog"] textarea::placeholder,
     div[role="dialog"] input::placeholder {
         color: rgba(255, 255, 255, 0.45) !important;
@@ -372,7 +376,7 @@ st.markdown("""
     div[role="dialog"] .stButton button:not([kind="primary"]) {
         background-color: #000000 !important;
         color: #FFFFFF !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
         border-radius: 10px !important;
     }
 
@@ -384,13 +388,11 @@ st.markdown("""
         background-color: #1a082e !important;
         color: #FFFFFF !important;
     }
-
     div[data-testid="stDataFrame"] [role="columnheader"] {
         background-color: #120422 !important;
         color: #FFFFFF !important;
         border-bottom: 2px solid rgba(255, 255, 255, 0.35) !important;
     }
-
     div[data-testid="stDataFrame"] [role="row"],
     div[data-testid="stDataFrame"] [role="gridcell"] {
         background-color: #1a082e !important;
@@ -869,4 +871,286 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         numero = str(row.get("numero") or "").strip()
         bairro = str(row.get("bairro") or "").strip()
         cep = str(row.get("cep") or "").strip()
-        endereco_comple
+        endereco_completo = f"{logradouro}, {numero} - {bairro}, São Paulo - SP, {cep}".strip(", -")
+        query_maps = urllib.parse.quote(endereco_completo)
+        maps_link = f"https://www.google.com/maps/search/?api=1&query={query_maps}"
+
+        st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #180933 0%, #0c021c 100%); border: 1px solid rgba(255,255,255,0.15); border-left: 5px solid #F76D4D; border-radius: 12px; padding: 20px; margin-bottom: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="font-size: 19px; font-weight: 800; color: #FFFFFF;">🏢 {nome_exibicao}</div>
+                    <code style="background-color: rgba(247, 109, 77, 0.15); color: #F76D4D; font-weight: 700; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid rgba(247, 109, 77, 0.3);">CNPJ: {cnpj_completo_exibicao}</code>
+                </div>
+                <div style="font-size: 13px; color: #e2e8f0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px;">
+                    <div><span style="color: #94a3b8; font-weight: 600;">Razão Social:</span><br><b>{row.get('razao_social', '-')}</b></div>
+                    <div><span style="color: #94a3b8; font-weight: 600;">Porte Empresarial:</span><br><b>{row.get('porte_empresa', 'Não Informado')}</b></div>
+                    <div><span style="color: #94a3b8; font-weight: 600;">Telefone de Contato:</span><br><b>📞 {tel_fmt}</b></div>
+                    <div><span style="color: #94a3b8; font-weight: 600;">E-mail Cadastrado:</span><br><b>✉️ {email_fmt}</b></div>
+                    <div style="grid-column: span 2;"><span style="color: #94a3b8; font-weight: 600;">Endereço Completo:</span><br><b>📍 {endereco_completo}</b></div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        col_acao1, col_acao2 = st.columns(2)
+        with col_acao1:
+            st.link_button("📍 Ver Rota Google Maps", maps_link, use_container_width=True)
+        with col_acao2:
+            clean_tel = "".join(filter(str.isdigit, tel_fmt))
+            if clean_tel and eh_celular(clean_tel):
+                msg_whats = urllib.parse.quote(f"Olá! Sou {st.session_state['usuario_ativo']} do CIEE e gostaria de falar com o responsável de RH da {nome_exibicao} sobre programas de Estágio e Aprendizagem.")
+                st.link_button("💬 Chamar no WhatsApp Web", f"https://wa.me/55{clean_tel}?text={msg_whats}", use_container_width=True)
+            else:
+                st.button("☎️ Contato Fixo (WhatsApp)", disabled=True, use_container_width=True)
+
+        st.markdown("<hr style='margin: 18px 0; border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+        st.markdown("##### ⚙️ Atualização do Follow-up")
+        
+        status_banco = row.get('status_followup', '')
+        idx_status = STATUS_OFICIAIS.index(status_banco) if status_banco in STATUS_OFICIAIS else 0
+        col_st, col_rp = st.columns(2)
+        with col_st:
+            status_selecionado = st.selectbox("📌 Status de Evolução:", options=STATUS_OFICIAIS, index=idx_status, key=f"status_select_{cnpj}")
+        with col_rp:
+            resp_banco = row.get('responsavel_tratamento', '') or ''
+            idx_operador_atual = 0
+            if resp_banco in LISTA_OPERADORES_OFICIAIS:
+                idx_operador_atual = LISTA_OPERADORES_OFICIAIS.index(resp_banco)
+            elif st.session_state["usuario_ativo"] in LISTA_OPERADORES_OFICIAIS:
+                idx_operador_atual = LISTA_OPERADORES_OFICIAIS.index(st.session_state["usuario_ativo"])
+                
+            novo_resp_selecionado = st.selectbox(
+                "👤 Atribuir Responsável:",
+                options=LISTA_OPERADORES_OFICIAIS,
+                index=idx_operador_atual,
+                key=f"resp_select_{cnpj}"
+            )
+
+        ticket_conversao = ""
+        if status_selecionado == "Lead Convertido":
+            ticket_conversao = st.text_input("🎟️ Protocolo / Ticket CIEE:", placeholder="Ex: CIEE-SP-12345", key=f"ticket_{cnpj}")
+        motivo_recusa_sel = ""
+        if status_selecionado == "Proposta Negada":
+            motivo_recusa_sel = st.selectbox("❌ Principal Motivo da Recusa:", MOTIVOS_RECUSA_OPCOES, key=f"recusa_{cnpj}")
+
+        st.markdown("📜 **Histórico de Interações:**")
+        obs_banco = row.get('observacoes', '') or ''
+        if obs_banco:
+            st.info(obs_banco)
+        else:
+            st.caption("Sem interações salvas.")
+
+        with st.form(f"form_tratamento_{cnpj}"):
+            nova_nota = st.text_area(
+                "✍️ Registrar Detalhes de Nova Interação:",
+                placeholder="Anotar resumo de ligação, retorno, decisor contactado...",
+                height=90,
+                key=f"nova_nota_{cnpj}"
+            )
+            
+            is_admin = str(st.session_state.get("usuario_ativo", "")).strip().upper() == "ALINE CRUZ"
+            if is_admin:
+                obs_manual = st.text_area("Histórico Bruto (Modo Administrador):", value=obs_banco, height=80, key=f"admin_obs_{cnpj}")
+            else:
+                obs_manual = obs_banco
+                
+            btn_salvar = st.form_submit_button("💾 Salvar Tratamento", use_container_width=True)
+            
+            if btn_salvar:
+                base_obs = obs_manual.strip() if is_admin else obs_banco.strip()
+                if nova_nota.strip():
+                    carimbo_tempo = datetime.now().strftime("%d/%m/%Y %H:%M")
+                    autor = novo_resp_selecionado or st.session_state["usuario_ativo"]
+                    novo_bloco = f"[{carimbo_tempo} - {autor}]: {nova_nota.strip()}"
+                    base_obs = f"{novo_bloco}\n{base_obs}".strip() if base_obs else novo_bloco
+                obs_final = base_obs
+                if status_selecionado == "Lead Convertido" and ticket_conversao.strip():
+                    registro_ticket = f"[TICKET: {ticket_conversao.strip()}]"
+                    if registro_ticket not in obs_final:
+                        obs_final = f"{registro_ticket} {obs_final}".strip()
+                if status_selecionado == "Proposta Negada" and motivo_recusa_sel:
+                    registro_recusa = f"[MOTIVO NEGADO: {motivo_recusa_sel}]"
+                    if registro_recusa not in obs_final:
+                        obs_final = f"{registro_recusa} {obs_final}".strip()
+                try:
+                    with engine.begin() as conn:
+                        conn.execute(text("""
+                            UPDATE empresas 
+                            SET responsavel_tratamento = :resp,
+                                status_followup = :stat,
+                                observacoes = :obs
+                            WHERE cnpj_formatado = :cnpj
+                        """), {
+                            "resp": novo_resp_selecionado,
+                            "stat": status_selecionado,
+                            "obs": obs_final,
+                            "cnpj": cnpj
+                        })
+                    carregar_kpis_base.clear()
+                    calcular_contatos_semana.clear()
+                    st.success("✅ Lead atualizado com sucesso!")
+                    st.rerun()
+                except Exception as err:
+                    st.error(f"Erro ao salvar: {err}")
+
+    # ==========================================
+    # TABELA PRINCIPAL DE EMPRESAS (RELAÇÃO)
+    # ==========================================
+    query_dados = f"""
+        SELECT 
+            cnpj_formatado, razao_social, nome_fantasia, porte_empresa,
+            CASE 
+                WHEN razao_social ILIKE '%comercio%' OR razao_social ILIKE '%varejo%' OR nome_fantasia ILIKE '%loja%' OR nome_fantasia ILIKE '%supermercado%' THEN 'Varejo'
+                ELSE 'Outros Serviços'
+            END AS segmentacao,
+            CASE 
+                WHEN razao_social ILIKE '%publica%' OR razao_social ILIKE '%prefeitura%' OR razao_social ILIKE '%municip%' OR razao_social ILIKE '%federal%' THEN 'Público'
+                ELSE 'Privado'
+            END AS setor_tipo,
+            COALESCE(bairro, 'Não Informado') AS bairro, cep, observacoes
+        FROM empresas {sql_where}
+        ORDER BY cnpj_formatado ASC
+        LIMIT {registros_por_pagina} OFFSET {offset_val}
+    """
+    df_tabela = pd.read_sql(text(query_dados), engine, params=params)
+
+    # Filtragem em memória por período semanal (se selecionado)
+    if not df_tabela.empty and filtro_semana_sel != "Qualquer Período":
+        hoje_ref = datetime.now()
+        inicio_sem_ref = hoje_ref - timedelta(days=hoje_ref.weekday())
+        inicio_sem_ref = inicio_sem_ref.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        def esta_no_periodo(obs):
+            datas = extrair_datas_observacoes(obs)
+            if not datas:
+                return False
+            data_mais_recente = max(datas)
+            if filtro_semana_sel == "Contatados Esta Semana":
+                return data_mais_recente >= inicio_sem_ref
+            elif filtro_semana_sel == "Contatados nos Últimos 14 Dias":
+                return data_mais_recente >= (hoje_ref - timedelta(days=14))
+            elif filtro_semana_sel == "Contatados no Último Mês":
+                return data_mais_recente >= (hoje_ref - timedelta(days=30))
+            return True
+
+        df_tabela = df_tabela[df_tabela['observacoes'].apply(esta_no_periodo)]
+
+    # Titulo e Botão de Exportação Alinhados
+    col_titulo_tab, col_export = st.columns([3, 2])
+    with col_titulo_tab:
+        status_indicador = f" • Filtro ativo: [{filtro_status_sel}]" if filtro_status_sel != "Todos" else ""
+        periodo_indicador = f" • [{filtro_semana_sel}]" if filtro_semana_sel != "Qualquer Período" else ""
+        st.markdown(f"#### 📋 Relação de Prospecção ({fmt_num(len(df_tabela))} CNPJs exibidos{status_indicador}{periodo_indicador})")
+    with col_export:
+        if not df_tabela.empty:
+            csv_data = df_tabela.drop(columns=['observacoes'], errors='ignore').to_csv(index=False).encode("utf-8-sig")
+            st.download_button(
+                label="📥 Exportar Dados Atuais (CSV)",
+                data=csv_data,
+                file_name=f"base_empresas_ciee_pag_{pagina_atual}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+
+    if df_tabela.empty:
+        st.info("Nenhum CNPJ localizado com os filtros selecionados.")
+    else:
+        st.caption("👉 **Ação:** Toque em qualquer linha da tabela para abrir o modal do lead e registrar follow-ups.")
+        
+        event = st.dataframe(
+            df_tabela[[
+                'cnpj_formatado', 'razao_social', 'nome_fantasia', 'porte_empresa',
+                'segmentacao', 'setor_tipo', 'bairro', 'cep'
+            ]],
+            column_config={
+                "cnpj_formatado": "CNPJ",
+                "razao_social": "Razão Social",
+                "nome_fantasia": "Nome Fantasia",
+                "porte_empresa": "Porte",
+                "segmentacao": "Segmentação",
+                "setor_tipo": "Tipo de Setor",
+                "bairro": "Bairro",
+                "cep": "CEP"
+            },
+            hide_index=True,
+            use_container_width=True,
+            on_select="rerun",
+            selection_mode="single-row",
+            key="tabela_leads"
+        )
+        
+        if event and event.selection and event.selection.rows:
+            idx_selecionado = event.selection.rows[0]
+            cnpj_clicado = df_tabela.iloc[idx_selecionado]['cnpj_formatado']
+            abrir_modal_tratamento(cnpj_clicado)
+
+        total_paginas = (total_filtrado // registros_por_pagina) + (1 if total_filtrado % registros_por_pagina > 0 else 0)
+        st.caption(f"Página **{pagina_atual}** de **{fmt_num(total_paginas)}** • Exibindo **{len(df_tabela)}** de **{fmt_num(total_filtrado)}** registros.")
+
+# ==========================================
+# ABA 2: GESTÃO E PRODUTIVIDADE CIEE
+# ==========================================
+else:
+    st.markdown("### 📊 Indicadores Comerciais & Produtividade")
+    st.markdown("---")
+
+    query_gestao = """
+        SELECT 
+            COALESCE(NULLIF(TRIM(responsavel_tratamento), ''), 'Não Atribuído') AS "Responsável",
+            status_followup,
+            observacoes,
+            COUNT(*) AS total
+        FROM empresas
+        GROUP BY 1, 2, 3
+    """
+    try:
+        df_gestao = pd.read_sql(text(query_gestao), engine)
+    except Exception:
+        df_gestao = pd.DataFrame()
+
+    st.markdown("#### 📅 Volume de Interações Realizadas por Semana")
+    contatos_semanais = {}
+    if not df_gestao.empty:
+        for _, r in df_gestao.iterrows():
+            obs = str(r['observacoes'])
+            datas = extrair_datas_observacoes(obs)
+            for d in datas:
+                num_semana = f"Semana {d.isocalendar().week} ({d.strftime('%Y')})"
+                contatos_semanais[num_semana] = contatos_semanais.get(num_semana, 0) + 1
+
+    if contatos_semanais:
+        df_sem = pd.DataFrame(list(contatos_semanais.items()), columns=["Semana", "Contatos Realizados"]).sort_values(by="Semana")
+        st.bar_chart(df_sem.set_index("Semana"), color="#F76D4D")
+    else:
+        st.caption("Ainda não há interações registradas para formar o histórico semanal.")
+
+    st.markdown("---")
+    col_g1, col_g2 = st.columns(2)
+    with col_g1:
+        st.markdown("#### 🏆 Ranking de Conversões por Consultor")
+        if not df_gestao.empty:
+            df_ranking = df_gestao.groupby("Responsável").agg(
+                Total_Leads_Trabalhados=("total", "sum"),
+                Conversoes_Efetivas=("total", lambda x: sum(df_gestao.loc[x.index, "total"][df_gestao.loc[x.index, "status_followup"].isin(["Lead Convertido", "Parceiro Ativo"])]))
+            ).reset_index().sort_values(by="Conversoes_Efetivas", ascending=False)
+            
+            st.dataframe(df_ranking, hide_index=True, use_container_width=True)
+        else:
+            st.info("Nenhum indicador disponível.")
+
+    with col_g2:
+        st.markdown("#### ❌ Principais Motivos de Recusa")
+        motivos_contagem = {motivo: 0 for motivo in MOTIVOS_RECUSA_OPCOES}
+        
+        if not df_gestao.empty:
+            for _, r in df_gestao.iterrows():
+                obs = str(r['observacoes'])
+                for motivo in MOTIVOS_RECUSA_OPCOES:
+                    if motivo in obs:
+                        motivos_contagem[motivo] += r['total']
+        
+        df_recusas = pd.DataFrame(list(motivos_contagem.items()), columns=["Motivo", "Quantidade"]).sort_values(by="Quantidade", ascending=False)
+        
+        if df_recusas["Quantidade"].sum() > 0:
+            st.bar_chart(df_recusas.set_index("Motivo"), color="#D02560")
+        else:
+            st.caption("Sem dados de recusa informados.")
