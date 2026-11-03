@@ -208,10 +208,7 @@ st.markdown("""
         color: rgba(255, 255, 255, 0.85);
     }
 
-    /* ========================================================
-       FORÇA TOTAL: FUNDO PRETO E TEXTO BRANCO EM TODOS OS FILTROS
-       ======================================================== */
-    /* Labels dos Filtros */
+    /* FORÇA TOTAL: FUNDO PRETO E TEXTO BRANCO EM TODOS OS FILTROS */
     label, 
     label p, 
     .stSelectbox label, 
@@ -224,7 +221,6 @@ st.markdown("""
         text-shadow: 0 1px 2px rgba(0,0,0,0.8) !important;
     }
 
-    /* Expander de Filtros: Container Escuro Integrado */
     div[data-testid="stExpander"] {
         background-color: rgba(18, 4, 34, 0.92) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -244,7 +240,7 @@ st.markdown("""
         background-color: transparent !important;
     }
 
-    /* 1. SELECTBOXES (Fundo Preto e Texto Branco) */
+    /* SELECTBOXES (Fundo Preto e Texto Branco) */
     [data-testid="stSelectbox"] > div > div,
     [data-testid="stSelectbox"] div[data-baseweb="select"],
     [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
@@ -265,7 +261,7 @@ st.markdown("""
         fill: #FFFFFF !important;
     }
 
-    /* 2. TEXT INPUTS E NUMBER INPUTS (Fundo Preto e Texto Branco) */
+    /* TEXT INPUTS E NUMBER INPUTS */
     [data-testid="stTextInput"] > div > div,
     [data-testid="stNumberInput"] > div > div,
     div[data-baseweb="base-input"],
@@ -293,7 +289,7 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
     }
 
-    /* 3. MENU DROPDOWN SUSPENSO (Ao clicar nos selects) */
+    /* MENU DROPDOWN SUSPENSO */
     ul[data-baseweb="menu"],
     div[data-baseweb="popover"],
     div[data-baseweb="popover"] > div {
@@ -309,9 +305,7 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* ========================================================
-       MODAL DE TRATAMENTO (@st.dialog) - FUNDO TOTALMENTE ESCURO
-       ======================================================== */
+    /* MODAL DE TRATAMENTO (@st.dialog) */
     div[role="dialog"],
     div[data-testid="stModal"] > div,
     div[data-testid="stDialog"] > div {
@@ -338,7 +332,6 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* Inputs e Selects dentro do modal em fundo preto absoluto */
     div[role="dialog"] div[data-baseweb="select"],
     div[role="dialog"] div[data-baseweb="select"] > div,
     div[role="dialog"] div[data-baseweb="select"] [aria-expanded] {
@@ -355,7 +348,6 @@ st.markdown("""
         fill: #FFFFFF !important;
     }
 
-    /* TextAreas no Modal */
     div[role="dialog"] div[data-baseweb="textarea"],
     div[role="dialog"] div[data-baseweb="textarea"] textarea,
     div[role="dialog"] textarea,
@@ -415,7 +407,6 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(247, 109, 77, 0.45) !important;
     }
 
-    /* Camada de clique dos cards */
     div[data-testid="stHorizontalBlock"]:has(.card-kpi) .stButton {
         margin-top: -125px !important;
         height: 125px !important;
@@ -495,6 +486,73 @@ LISTA_OPERADORES_OFICIAIS = [
     "TAINA ZANELLATO", "THAYNA CRUZ", "THAYNA IBRAIM", "VINICIUS RODRIGUES", 
     "VIVIANE VENAGLIA", "WILLIAM LIMA"
 ]
+
+# 21 SEÇÕES OFICIAIS CNAE
+SECOES_CNAE_LISTA = [
+    "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura",
+    "Indústrias Extrativas",
+    "Indústrias de Transformação",
+    "Eletricidade e Gás",
+    "Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação",
+    "Construção",
+    "Comércio; Reparação de Veículos Automotores e Motocicletas",
+    "Transporte, Armazenamento e Correio",
+    "Alojamento e Alimentação",
+    "Informação e Comunicação",
+    "Atividades Financeiras, de Seguros e Serviços Relacionados",
+    "Atividades Imobiliárias",
+    "Atividades Profissionais, Científicas e Técnicas",
+    "Atividades Administrativas e Serviços Complementares",
+    "Administração Pública, Defesa e Seguridade Social",
+    "Educação",
+    "Saúde Humana e Serviços Sociais",
+    "Artes, Cultura, Esporte e Recreação",
+    "Outras Atividades de Serviços",
+    "Serviços Domésticos",
+    "Organismos Internacionais e Outras Instituições Extraterritoriais"
+]
+
+# Expressão SQL que classifica a empresa com base no código CNAE (ou por palavras-chave caso a coluna cnae_fiscal não contenha código)
+SQL_SEGMENTO_CNAE_CASE = """
+    CASE 
+        WHEN NULLIF(REGEXP_REPLACE(COALESCE(cnae_fiscal::text, ''), '\\D', '', 'g'), '') IS NOT NULL THEN
+            CASE 
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 1 AND 3 THEN 'Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 5 AND 9 THEN 'Indústrias Extrativas'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 10 AND 33 THEN 'Indústrias de Transformação'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 35 THEN 'Eletricidade e Gás'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 36 AND 39 THEN 'Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 41 AND 43 THEN 'Construção'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 45 AND 47 THEN 'Comércio; Reparação de Veículos Automotores e Motocicletas'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 49 AND 53 THEN 'Transporte, Armazenamento e Correio'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 55 AND 56 THEN 'Alojamento e Alimentação'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 58 AND 63 THEN 'Informação e Comunicação'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 64 AND 66 THEN 'Atividades Financeiras, de Seguros e Serviços Relacionados'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 68 THEN 'Atividades Imobiliárias'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 69 AND 75 THEN 'Atividades Profissionais, Científicas e Técnicas'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 77 AND 82 THEN 'Atividades Administrativas e Serviços Complementares'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 84 THEN 'Administração Pública, Defesa e Seguridade Social'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 85 THEN 'Educação'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 86 AND 88 THEN 'Saúde Humana e Serviços Sociais'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 90 AND 93 THEN 'Artes, Cultura, Esporte e Recreação'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int BETWEEN 94 AND 96 THEN 'Outras Atividades de Serviços'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 97 THEN 'Serviços Domésticos'
+                WHEN SUBSTRING(LPAD(REGEXP_REPLACE(cnae_fiscal::text, '\\D', '', 'g'), 7, '0'), 1, 2)::int = 99 THEN 'Organismos Internacionais e Outras Instituições Extraterritoriais'
+                ELSE 'Outras Atividades de Serviços'
+            END
+        ELSE
+            CASE 
+                WHEN razao_social ILIKE '%comercio%' OR razao_social ILIKE '%varejo%' OR razao_social ILIKE '%loja%' OR nome_fantasia ILIKE '%loja%' OR nome_fantasia ILIKE '%supermercado%' THEN 'Comércio; Reparação de Veículos Automotores e Motocicletas'
+                WHEN razao_social ILIKE '%publica%' OR razao_social ILIKE '%prefeitura%' OR razao_social ILIKE '%municip%' OR razao_social ILIKE '%federal%' THEN 'Administração Pública, Defesa e Seguridade Social'
+                WHEN razao_social ILIKE '%transporte%' OR razao_social ILIKE '%logistica%' THEN 'Transporte, Armazenamento e Correio'
+                WHEN razao_social ILIKE '%escola%' OR razao_social ILIKE '%colegio%' OR razao_social ILIKE '%educac%' THEN 'Educação'
+                WHEN razao_social ILIKE '%hospital%' OR razao_social ILIKE '%clinica%' OR razao_social ILIKE '%medico%' THEN 'Saúde Humana e Serviços Sociais'
+                WHEN razao_social ILIKE '%engenharia%' OR razao_social ILIKE '%construc%' THEN 'Construção'
+                WHEN razao_social ILIKE '%alimento%' OR razao_social ILIKE '%restaurante%' OR razao_social ILIKE '%hotel%' THEN 'Alojamento e Alimentação'
+                ELSE 'Outras Atividades de Serviços'
+            END
+    END
+"""
 
 # ==========================================
 # 5. CONSULTAS OTIMIZADAS COM CACHE
@@ -590,7 +648,7 @@ with st.sidebar:
     operador_logado = st.selectbox(
         "Sessão ativa como:",
         options=LISTA_OPERADORES_OFICIAIS,
-        index=1  # Default: ALINE CRUZ
+        index=1
     )
     st.session_state["usuario_ativo"] = operador_logado
 
@@ -742,7 +800,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     st.caption("👆 **Interatividade:** Selecione qualquer card de métrica para filtrar os registros instantaneamente.")
 
     # ==========================================
-    # FILTROS DE BUSCA (COM CEP INCLUÍDO)
+    # FILTROS DE BUSCA (COM 21 SEGMENTOS CNAE)
     # ==========================================
     with st.expander("🎛️ FILTROS AVANÇADOS DE SELEÇÃO & PERÍODO SEMANAL", expanded=True):
         col_f1, col_f2, col_f3, col_f4 = st.columns(4)
@@ -765,19 +823,23 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 index=0
             )
 
-        col_f5, col_f6, col_f7, col_f8, col_f9 = st.columns(5)
+        col_f5, col_f6, col_f7, col_f8 = st.columns([2, 1, 1, 1])
         with col_f5:
-            filtro_segmentacao_sel = st.selectbox("Segmentação de Atuação:", ["Todos", "Varejo", "Outros Serviços"], index=0)
+            filtro_segmento_sel = st.selectbox(
+                "Segmentação Econômica (CNAE):",
+                ["Todos"] + SECOES_CNAE_LISTA,
+                index=0
+            )
         with col_f6:
             filtro_setor_tipo_sel = st.selectbox("Tipo de Setor:", ["Todos", "Público", "Privado"], index=0)
         with col_f7:
             busca_bairro = st.text_input("Bairro ou Região:", placeholder="Ex: Centro, Pinheiros...")
         with col_f8:
             busca_cep = st.text_input("CEP:", placeholder="Ex: 01310 ou 01310-100")
+
+        col_f9, col_p1, col_p2 = st.columns([2, 1, 1])
         with col_f9:
             busca_texto = st.text_input("Razão Social ou CNPJ:", placeholder="Digite nome ou números...")
-
-        col_p1, col_p2 = st.columns(2)
         with col_p1:
             registros_por_pagina = st.selectbox("Registros por Página:", [50, 100, 250, 500], index=1)
         with col_p2:
@@ -825,12 +887,9 @@ if aba_selecionada == "🔍 Prospecção de Leads":
         where_clauses.append("(razao_social ILIKE :txt OR cnpj_formatado LIKE :txt)")
         params["txt"] = f"%{busca_texto.strip()}%"
 
-    if filtro_segmentacao_sel != "Todos":
-        varejo_cond = "(razao_social ILIKE '%comercio%' OR razao_social ILIKE '%varejo%' OR nome_fantasia ILIKE '%loja%' OR nome_fantasia ILIKE '%supermercado%')"
-        if filtro_segmentacao_sel == "Varejo":
-            where_clauses.append(varejo_cond)
-        else:
-            where_clauses.append(f"NOT {varejo_cond}")
+    if filtro_segmento_sel != "Todos":
+        where_clauses.append(f"({SQL_SEGMENTO_CNAE_CASE}) = :seg_sel")
+        params["seg_sel"] = filtro_segmento_sel
 
     if filtro_setor_tipo_sel != "Todos":
         if filtro_setor_tipo_sel == "Público":
@@ -851,7 +910,12 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # ==========================================
     @st.dialog("📝 Ficha do Lead & Histórico de Interação", width="large")
     def abrir_modal_tratamento(cnpj):
-        query_emp = "SELECT * FROM empresas WHERE cnpj_formatado = :cnpj"
+        query_emp = f"""
+            SELECT *, 
+                ({SQL_SEGMENTO_CNAE_CASE}) AS segmento_cnae
+            FROM empresas 
+            WHERE cnpj_formatado = :cnpj
+        """
         res_df = pd.read_sql(text(query_emp), engine, params={"cnpj": cnpj})
         
         if res_df.empty:
@@ -883,6 +947,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 </div>
                 <div style="font-size: 13px; color: #e2e8f0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px;">
                     <div><span style="color: #94a3b8; font-weight: 600;">Razão Social:</span><br><b>{row.get('razao_social', '-')}</b></div>
+                    <div><span style="color: #94a3b8; font-weight: 600;">Segmento Econômico:</span><br><b>{row.get('segmento_cnae', '-')}</b></div>
                     <div><span style="color: #94a3b8; font-weight: 600;">Porte Empresarial:</span><br><b>{row.get('porte_empresa', 'Não Informado')}</b></div>
                     <div><span style="color: #94a3b8; font-weight: 600;">Telefone de Contato:</span><br><b>📞 {tel_fmt}</b></div>
                     <div><span style="color: #94a3b8; font-weight: 600;">E-mail Cadastrado:</span><br><b>✉️ {email_fmt}</b></div>
@@ -998,10 +1063,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     query_dados = f"""
         SELECT 
             cnpj_formatado, razao_social, nome_fantasia, porte_empresa,
-            CASE 
-                WHEN razao_social ILIKE '%comercio%' OR razao_social ILIKE '%varejo%' OR nome_fantasia ILIKE '%loja%' OR nome_fantasia ILIKE '%supermercado%' THEN 'Varejo'
-                ELSE 'Outros Serviços'
-            END AS segmentacao,
+            ({SQL_SEGMENTO_CNAE_CASE}) AS segmentacao,
             CASE 
                 WHEN razao_social ILIKE '%publica%' OR razao_social ILIKE '%prefeitura%' OR razao_social ILIKE '%municip%' OR razao_social ILIKE '%federal%' THEN 'Público'
                 ELSE 'Privado'
@@ -1066,7 +1128,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
                 "razao_social": "Razão Social",
                 "nome_fantasia": "Nome Fantasia",
                 "porte_empresa": "Porte",
-                "segmentacao": "Segmentação",
+                "segmentacao": "Segmentação Econômica (CNAE)",
                 "setor_tipo": "Tipo de Setor",
                 "bairro": "Bairro",
                 "cep": "CEP"
