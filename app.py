@@ -511,7 +511,6 @@ SECOES_CNAE_LISTA = [
     "Organismos Internacionais e Outras Instituições Extraterritoriais"
 ]
 
-# Mapa de palavras-chave para busca textual por segmento
 MAPA_PALAVRAS_CHAVE_SEGMENTOS = {
     "Comércio; Reparação de Veículos Automotores e Motocicletas": [
         "comercio", "varejo", "loja", "supermercado", "magazine", "mercado", "distribuidora", "auto pecas", "atacado", "concessionaria"
@@ -604,57 +603,66 @@ def obter_coluna_cnae_disponivel():
 COLUNA_CNAE = obter_coluna_cnae_disponivel()
 
 def classificar_segmento_em_memoria(row):
-    """Classifica com precisão no Python para garantir o preenchimento correto da coluna na tabela."""
-    if COLUNA_CNAE and COLUNA_CNAE in row and pd.notnull(row[COLUNA_CNAE]):
-        val = str(row[COLUNA_CNAE])
-        digitos = re.sub(r'\D', '', val)
-        if len(digitos) >= 2:
-            div = int(digitos[:2])
-            if 1 <= div <= 3:
-                return "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura"
-            elif 5 <= div <= 9:
-                return "Indústrias Extrativas"
-            elif 10 <= div <= 33:
-                return "Indústrias de Transformação"
-            elif div == 35:
-                return "Eletricidade e Gás"
-            elif 36 <= div <= 39:
-                return "Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação"
-            elif 41 <= div <= 43:
-                return "Construção"
-            elif 45 <= div <= 47:
-                return "Comércio; Reparação de Veículos Automotores e Motocicletas"
-            elif 49 <= div <= 53:
-                return "Transporte, Armazenamento e Correio"
-            elif 55 <= div <= 56:
-                return "Alojamento e Alimentação"
-            elif 58 <= div <= 63:
-                return "Informação e Comunicação"
-            elif 64 <= div <= 66:
-                return "Atividades Financeiras, de Seguros e Serviços Relacionados"
-            elif div == 68:
-                return "Atividades Imobiliárias"
-            elif 69 <= div <= 75:
-                return "Atividades Profissionais, Científicas e Técnicas"
-            elif 77 <= div <= 82:
-                return "Atividades Administrativas e Serviços Complementares"
-            elif div == 84:
-                return "Administração Pública, Defesa e Seguridade Social"
-            elif div == 85:
-                return "Educação"
-            elif 86 <= div <= 88:
-                return "Saúde Humana e Serviços Sociais"
-            elif 90 <= div <= 93:
-                return "Artes, Cultura, Esporte e Recreação"
-            elif 94 <= div <= 96:
-                return "Outras Atividades de Serviços"
-            elif div == 97:
-                return "Serviços Domésticos"
-            elif div == 99:
-                return "Organismos Internacionais e Outras Instituições Extraterritoriais"
+    """Classifica com precisão no Python de forma blindada contra valores duplicados ou Series."""
+    if COLUNA_CNAE and COLUNA_CNAE in row:
+        val_obj = row[COLUNA_CNAE]
+        # Garante que seja um valor escalar, mesmo que a coluna tenha vindo duplicada
+        if isinstance(val_obj, pd.Series):
+            val_obj = val_obj.iloc[0] if not val_obj.empty else None
+            
+        if pd.notnull(val_obj):
+            val = str(val_obj)
+            digitos = re.sub(r'\D', '', val)
+            if len(digitos) >= 2:
+                div = int(digitos[:2])
+                if 1 <= div <= 3:
+                    return "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura"
+                elif 5 <= div <= 9:
+                    return "Indústrias Extrativas"
+                elif 10 <= div <= 33:
+                    return "Indústrias de Transformação"
+                elif div == 35:
+                    return "Eletricidade e Gás"
+                elif 36 <= div <= 39:
+                    return "Água, Esgoto, Atividades de Gestão de Resíduos e Descontaminação"
+                elif 41 <= div <= 43:
+                    return "Construção"
+                elif 45 <= div <= 47:
+                    return "Comércio; Reparação de Veículos Automotores e Motocicletas"
+                elif 49 <= div <= 53:
+                    return "Transporte, Armazenamento e Correio"
+                elif 55 <= div <= 56:
+                    return "Alojamento e Alimentação"
+                elif 58 <= div <= 63:
+                    return "Informação e Comunicação"
+                elif 64 <= div <= 66:
+                    return "Atividades Financeiras, de Seguros e Serviços Relacionados"
+                elif div == 68:
+                    return "Atividades Imobiliárias"
+                elif 69 <= div <= 75:
+                    return "Atividades Profissionais, Científicas e Técnicas"
+                elif 77 <= div <= 82:
+                    return "Atividades Administrativas e Serviços Complementares"
+                elif div == 84:
+                    return "Administração Pública, Defesa e Seguridade Social"
+                elif div == 85:
+                    return "Educação"
+                elif 86 <= div <= 88:
+                    return "Saúde Humana e Serviços Sociais"
+                elif 90 <= div <= 93:
+                    return "Artes, Cultura, Esporte e Recreação"
+                elif 94 <= div <= 96:
+                    return "Outras Atividades de Serviços"
+                elif div == 97:
+                    return "Serviços Domésticos"
+                elif div == 99:
+                    return "Organismos Internacionais e Outras Instituições Extraterritoriais"
 
     # Comparação por palavras-chave na Razão Social e Nome Fantasia
-    texto = (str(row.get('razao_social', '')) + " " + str(row.get('nome_fantasia', ''))).lower()
+    razao = str(row.get('razao_social', ''))
+    fantasia = str(row.get('nome_fantasia', ''))
+    texto = f"{razao} {fantasia}".lower()
+    
     for seg, palavras in MAPA_PALAVRAS_CHAVE_SEGMENTOS.items():
         if any(p in texto for p in palavras):
             return seg
@@ -668,7 +676,6 @@ def montar_condicao_sql_segmento(segmento_escolhido, col_cnae=None):
 
     clausulas = []
     
-    # 1. Se houver coluna de código CNAE, filtra pelo range de 2 dígitos
     ranges_cnae = {
         "Agricultura, Pecuária, Produção Florestal, Pesca e Aquicultura": (1, 3),
         "Indústrias Extrativas": (5, 9),
@@ -701,7 +708,6 @@ def montar_condicao_sql_segmento(segmento_escolhido, col_cnae=None):
         """
         clausulas.append(clausula_cnae)
 
-    # 2. Busca por palavras-chave na Razão Social e Nome Fantasia
     palavras = MAPA_PALAVRAS_CHAVE_SEGMENTOS.get(segmento_escolhido, [])
     if palavras:
         condicoes_palavras = " OR ".join([
@@ -936,7 +942,7 @@ if aba_selecionada == "🔍 Prospecção de Leads":
             <div class="card-kpi border-ativo {cls_ativo}">
                 <div class="kpi-header"><span class="kpi-title">Parceiro Ativo</span><span class="kpi-icon">🤝</span></div>
                 <div class="kpi-value">{fmt_num(qtd_ativos)}</div>
-                <div class="kpi-sub">{pct(qtd_retorno := qtd_ativos):.1f}% da base</div>
+                <div class="kpi-sub">{pct(qtd_ativos):.1f}% da base</div>
             </div>
         ''', unsafe_allow_html=True)
         if st.button(" ", key="card_pa", use_container_width=True):
@@ -1071,8 +1077,8 @@ if aba_selecionada == "🔍 Prospecção de Leads":
     # ==========================================
     @st.dialog("📝 Ficha do Lead & Histórico de Interação", width="large")
     def abrir_modal_tratamento(cnpj):
-        col_cnae_sel = f", {COLUNA_CNAE}" if COLUNA_CNAE else ""
-        query_emp = f"SELECT *{col_cnae_sel} FROM empresas WHERE cnpj_formatado = :cnpj"
+        # Seleciona apenas '*' para nunca duplicar nomes de colunas
+        query_emp = "SELECT * FROM empresas WHERE cnpj_formatado = :cnpj"
         res_df = pd.read_sql(text(query_emp), engine, params={"cnpj": cnpj})
         
         if res_df.empty:
